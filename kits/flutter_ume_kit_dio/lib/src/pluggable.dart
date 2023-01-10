@@ -4,7 +4,7 @@
 ///
 
 import 'package:flutter/material.dart';
-import 'package:dio/dio.dart' show Dio;
+import 'package:diox/diox.dart' show Dio;
 import 'package:flutter_ume/core/pluggable.dart';
 
 import 'models/http_interceptor.dart';

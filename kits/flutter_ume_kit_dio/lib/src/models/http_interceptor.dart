@@ -2,7 +2,7 @@
 /// [Author] Alex (https://github.com/AlexV525)
 /// [Date] 4/13/21 1:58 PM
 ///
-import 'package:dio/dio.dart';
+import 'package:diox/diox.dart';
 
 import '../constants/constants.dart';
 import '../instances.dart';
@@ -36,7 +36,7 @@ class UMEDioInterceptor extends Interceptor {
   @override
   void onError(DioError err, ErrorInterceptorHandler handler) {
     // Create an empty response with the [RequestOptions] for delivery.
-    err.response ??= Response<dynamic>(requestOptions: err.requestOptions);
+    err = err.copyWith(response: Response<dynamic>(requestOptions: err.requestOptions));
     err.response!.requestOptions.extra[DIO_EXTRA_END_TIME] = _timestamp;
     InspectorInstance.httpContainer.addRequest(err.response!);
     handler.next(err);

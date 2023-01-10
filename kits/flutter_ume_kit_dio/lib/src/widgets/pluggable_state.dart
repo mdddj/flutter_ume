@@ -5,7 +5,7 @@
 import 'dart:convert';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:dio/dio.dart';
+import 'package:diox/diox.dart';
 import 'package:flutter_ume_kit_dio/src/widgets/json_view.dart';
 
 import '../constants/extensions.dart';
