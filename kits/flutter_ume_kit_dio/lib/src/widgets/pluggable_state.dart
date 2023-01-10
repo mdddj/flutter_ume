@@ -3,9 +3,10 @@
 /// [Date] 2021/8/6 11:25
 ///
 import 'dart:convert';
-
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter_ume_kit_dio/src/widgets/json_view.dart';
 
 import '../constants/extensions.dart';
 import '../instances.dart';
@@ -229,7 +230,7 @@ class _ResponseCardState extends State<_ResponseCard> {
   /// The [Uri] that the [_request] requested.
   Uri get _requestUri => _request.uri;
 
-  String? get _requestHeadersBuilder {
+  String?  _requestHeadersBuilder(BuildContext context) {
     final Map<String, List<String>> map = _request.headers.map(
       (key, value) => MapEntry(
         key,
@@ -327,7 +328,7 @@ class _ResponseCardState extends State<_ResponseCard> {
             children: <Widget>[
               _TagText(
                 tag: 'Request headers',
-                content: _requestHeadersBuilder,
+                content: _requestHeadersBuilder(context),
               ),
               _TagText(
                 tag: 'Request data',
@@ -386,7 +387,7 @@ class _TagText extends StatelessWidget {
   final String? content;
   final bool shouldStartFromNewLine;
 
-  TextSpan get span {
+  TextSpan  span(BuildContext context) {
     return TextSpan(
       children: <TextSpan>[
         TextSpan(
@@ -395,8 +396,15 @@ class _TagText extends StatelessWidget {
         ),
         if (shouldStartFromNewLine) TextSpan(text: '\n'),
         TextSpan(text: content!),
+        TextSpan(text: ' 格式化展示>> ',recognizer: TapGestureRecognizer()..onTap = () => {
+          Navigator.push(context, MaterialPageRoute(builder: (_)=>MyJsonView(title: tag,data: content)))
+        },style: TextStyle(color: Colors.blueGrey)),
       ],
     );
+  }
+  
+  Widget  spanVersion(BuildContext context) {
+    return SelectableText.rich(span(context));
   }
 
   @override
@@ -406,7 +414,7 @@ class _TagText extends StatelessWidget {
     }
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
-      child: SelectableText.rich(span),
+      child: spanVersion(context),
     );
   }
 }
