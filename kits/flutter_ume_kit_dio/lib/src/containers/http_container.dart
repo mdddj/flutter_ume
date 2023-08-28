@@ -5,7 +5,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/widgets.dart';
-import 'package:diox/diox.dart' show Response;
+import 'package:dio/dio.dart' show Response;
 
 /// Implements a [ChangeNotifier] to notify listeners when new responses
 /// were recorded. Use [page] to support paging.

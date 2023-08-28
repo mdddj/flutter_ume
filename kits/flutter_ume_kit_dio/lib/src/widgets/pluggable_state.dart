@@ -3,10 +3,8 @@
 /// [Date] 2021/8/6 11:25
 ///
 import 'dart:convert';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:diox/diox.dart';
-import 'package:flutter_ume_kit_dio/src/widgets/json_view.dart';
+import 'package:dio/dio.dart';
 
 import '../constants/extensions.dart';
 import '../instances.dart';
@@ -25,12 +23,18 @@ ButtonStyle _buttonStyle(
       borderRadius: BorderRadius.circular(999999),
     ),
     backgroundColor: Theme.of(context).primaryColor,
-    primary: Colors.white,
+    disabledForegroundColor: Colors.white,
     tapTargetSize: MaterialTapTargetSize.shrinkWrap,
   );
 }
 
 class DioPluggableState extends State<DioInspector> {
+  final NavigatorState? nav;
+
+  DioPluggableState(this.nav);
+
+  final ScrollController scrollController = ScrollController();
+
   @override
   void initState() {
     super.initState();
@@ -40,6 +44,7 @@ class DioPluggableState extends State<DioInspector> {
 
   @override
   void dispose() {
+    scrollController.dispose();
     InspectorInstance.httpContainer
       ..removeListener(_listener) // First, remove refresh listener.
       ..resetPaging(); // Then reset the paging field.
@@ -59,23 +64,11 @@ class DioPluggableState extends State<DioInspector> {
   }
 
   Widget _clearAllButton(BuildContext context) {
-    return TextButton(
-      onPressed: InspectorInstance.httpContainer.clearRequests,
-      style: _buttonStyle(
-        context,
-        padding: const EdgeInsets.symmetric(
-          horizontal: 8,
-          vertical: 3,
-        ),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: const <Widget>[
-          Text('Clear'),
-          Icon(Icons.cleaning_services, size: 14),
-        ],
-      ),
-    );
+    return FilledButton.icon(
+        onPressed: InspectorInstance.httpContainer.clearRequests,
+        icon: Icon(Icons.cleaning_services,size: 12,),
+        style: _buttonStyle(context,padding: EdgeInsets.all(2)),
+        label: Text('清理'));
   }
 
   Widget _itemList(BuildContext context) {
@@ -83,24 +76,29 @@ class DioPluggableState extends State<DioInspector> {
         InspectorInstance.httpContainer.pagedRequests;
     final int length = requests.length;
     if (length > 0) {
-      return CustomScrollView(
-        slivers: <Widget>[
-          SliverList(
-            delegate: SliverChildBuilderDelegate(
-              (_, int index) {
-                final Response<dynamic> r = requests[index];
-                if (index == length - 2) {
-                  InspectorInstance.httpContainer.loadNextPage();
-                }
-                return _ResponseCard(
-                  key: ValueKey<int>(r.startTimeMilliseconds),
-                  response: r,
-                );
-              },
-              childCount: length,
+      return Scrollbar(
+        controller: scrollController,
+        child: CustomScrollView(
+          controller: scrollController,
+          slivers: <Widget>[
+            SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (_, int index) {
+                  final Response<dynamic> r = requests[index];
+                  if (index == length - 2) {
+                    InspectorInstance.httpContainer.loadNextPage();
+                  }
+                  return _ResponseCard(
+                    key: ValueKey<int>(r.startTimeMilliseconds),
+                    response: r,
+                    nav: nav,
+                  );
+                },
+                childCount: length,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       );
     }
     return const Center(
@@ -115,9 +113,9 @@ class DioPluggableState extends State<DioInspector> {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: Colors.black26,
+      color: Colors.black38,
       child: DefaultTextStyle.merge(
-        style: Theme.of(context).textTheme.bodyText2,
+        style: Theme.of(context).textTheme.bodyMedium,
         child: Align(
           alignment: Alignment.bottomCenter,
           child: Container(
@@ -134,20 +132,12 @@ class DioPluggableState extends State<DioInspector> {
             child: Column(
               children: <Widget>[
                 Padding(
-                  padding: const EdgeInsets.all(12.0),
+                  padding: const EdgeInsets.all(8.0),
                   child: Row(
-                    children: <Widget>[
-                      const Spacer(),
-                      Text(
-                        'Dio Requests',
-                        style: Theme.of(context).textTheme.subtitle1,
-                      ),
-                      Expanded(
-                        child: Align(
-                          alignment: AlignmentDirectional.centerEnd,
-                          child: _clearAllButton(context),
-                        ),
-                      ),
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text('请求',style: Theme.of(context).textTheme.titleMedium),
+                      _clearAllButton(context)
                     ],
                   ),
                 ),
@@ -167,12 +157,11 @@ class DioPluggableState extends State<DioInspector> {
 }
 
 class _ResponseCard extends StatefulWidget {
-  const _ResponseCard({
-    required Key? key,
-    required this.response,
-  }) : super(key: key);
+  const _ResponseCard({required Key? key, required this.response, this.nav})
+      : super(key: key);
 
   final Response<dynamic> response;
+  final NavigatorState? nav;
 
   @override
   _ResponseCardState createState() => _ResponseCardState();
@@ -228,9 +217,15 @@ class _ResponseCardState extends State<_ResponseCard> {
   String get _method => _request.method;
 
   /// The [Uri] that the [_request] requested.
-  Uri get _requestUri => _request.uri;
+  Uri get _requestUri {
+    return _request.uri;
+  }
 
-  String?  _requestHeadersBuilder(BuildContext context) {
+  String get _requestUrl {
+    return _requestUri.path;
+  }
+
+  String? _requestHeadersBuilder(BuildContext context) {
     final Map<String, List<String>> map = _request.headers.map(
       (key, value) => MapEntry(
         key,
@@ -244,9 +239,17 @@ class _ResponseCardState extends State<_ResponseCard> {
     return '$headers';
   }
 
+  String? get _requestQueryBuilder {
+    final q = _requestUri.queryParameters;
+    if (q.isNotEmpty) {
+      return _encoder.convert(q);
+    }
+    return q.toString();
+  }
+
   /// Data for the [_request].
   String? get _requestDataBuilder {
-    if (_request.data is Map) {
+    if (_request.data is Map || _request.data is List) {
       return _encoder.convert(_request.data);
     }
     return _request.data?.toString();
@@ -258,10 +261,22 @@ class _ResponseCardState extends State<_ResponseCard> {
     if (data == null) {
       return null;
     }
+
+    if(data is List<dynamic>) {
+      return _encoder.convert(data);
+    }
+
     if (_response.data is Map) {
       return _encoder.convert(_response.data);
     }
-    return _response.data.toString();
+    final dataString = _response.data.toString();
+
+    try{
+      return _encoder.convert(jsonDecode(dataString));
+    }catch(_){
+      return dataString;
+    }
+
   }
 
   String? get _responseHeadersBuilder {
@@ -276,7 +291,7 @@ class _ResponseCardState extends State<_ResponseCard> {
       onPressed: _switchExpand,
       style: _buttonStyle(context),
       child: const Text(
-        'Detail🔍',
+        '详情',
         style: TextStyle(fontSize: 12, height: 1.2),
       ),
     );
@@ -285,8 +300,6 @@ class _ResponseCardState extends State<_ResponseCard> {
   Widget _infoContent(BuildContext context) {
     return Row(
       children: <Widget>[
-        Text(_startTime.hms()),
-        const SizedBox(width: 6),
         Container(
           padding: const EdgeInsets.symmetric(
             horizontal: 5,
@@ -301,6 +314,8 @@ class _ResponseCardState extends State<_ResponseCard> {
             style: const TextStyle(color: Colors.white, fontSize: 12),
           ),
         ),
+        const SizedBox(width: 6),
+        Text(_startTime.hms()),
         const SizedBox(width: 6),
         Text(
           _method,
@@ -326,20 +341,32 @@ class _ResponseCardState extends State<_ResponseCard> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
+              // ElevatedButton(
+              //     onPressed: () {
+              //       widget.nav?.push(MaterialPageRoute(
+              //           builder: (_) => MyJsonView(
+              //               title: '数据', data: _responseDataBuilder)));
+              //     },
+              //     child: Text("格式化展示")),
               _TagText(
-                tag: 'Request headers',
+                tag: '请求头',
                 content: _requestHeadersBuilder(context),
               ),
               _TagText(
-                tag: 'Request data',
+                tag: '请求参数(Body Json)',
                 content: _requestDataBuilder,
               ),
+              if(_requestUri.queryParameters.isNotEmpty)
               _TagText(
-                tag: 'Response body',
+                tag: '查询参数(Query)',
+                content: _requestQueryBuilder,
+              ),
+              _TagText(
+                tag: '返回数据',
                 content: _responseDataBuilder,
               ),
               _TagText(
-                tag: 'Response headers',
+                tag: '返回头',
                 content: _responseHeadersBuilder,
               ),
             ],
@@ -351,24 +378,39 @@ class _ResponseCardState extends State<_ResponseCard> {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.all(8.0),
-      shadowColor: Theme.of(context).canvasColor,
-      elevation: 5,
-      child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            _infoContent(context),
-            const SizedBox(height: 10),
-            _TagText(
-              tag: 'Uri',
-              content: '$_requestUri',
-              shouldStartFromNewLine: false,
+    return Container(
+      margin: EdgeInsets.all(8),
+      decoration: BoxDecoration(
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.shade200.withOpacity(0.5),
+              spreadRadius: 5,
+              blurRadius: 7,
+              offset: Offset(0, 3), // changes position of shadow
             ),
-            _detailedContent(context),
-          ],
+          ]
+      ),
+      child: Card(
+        margin:  EdgeInsets.zero,
+        elevation: 0,
+        color: Theme.of(context).colorScheme.outlineVariant,
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              _infoContent(context),
+              const SizedBox(height: 10),
+              _TagText(
+                tag: '$_method',
+                content: '$_requestUrl',
+                shouldStartFromNewLine: false,
+                nav: widget.nav,
+                fontSize: 14,
+              ),
+              _detailedContent(context),
+            ],
+          ),
         ),
       ),
     );
@@ -376,34 +418,37 @@ class _ResponseCardState extends State<_ResponseCard> {
 }
 
 class _TagText extends StatelessWidget {
-  const _TagText({
-    Key? key,
-    required this.tag,
-    this.content,
-    this.shouldStartFromNewLine = true,
-  }) : super(key: key);
-
+  const _TagText(
+      {Key? key,
+      required this.tag,
+      this.content,
+      this.shouldStartFromNewLine = true,
+      this.nav, this.fontSize})
+      : super(key: key);
+  final NavigatorState? nav;
   final String tag;
   final String? content;
   final bool shouldStartFromNewLine;
+  final double? fontSize;
 
-  TextSpan  span(BuildContext context) {
+  TextSpan span(BuildContext context) {
     return TextSpan(
       children: <TextSpan>[
         TextSpan(
           text: '$tag: ',
-          style: const TextStyle(fontWeight: FontWeight.bold),
+          style: const TextStyle(fontWeight: FontWeight.bold,color: Colors.blue),
         ),
+        // TextSpan(
+        //     text: ' 格式化展示>> ',
+        //     recognizer: TapGestureRecognizer()..onTap = () => {nav?.push(MaterialPageRoute(builder: (_) => MyJsonView(title: tag, data: content)))},
+        //     style: TextStyle(color: Colors.blueGrey)),
         if (shouldStartFromNewLine) TextSpan(text: '\n'),
-        TextSpan(text: content!),
-        TextSpan(text: ' 格式化展示>> ',recognizer: TapGestureRecognizer()..onTap = () => {
-          Navigator.push(context, MaterialPageRoute(builder: (_)=>MyJsonView(title: tag,data: content)))
-        },style: TextStyle(color: Colors.blueGrey)),
+        TextSpan(text: content!,style: TextStyle(fontSize: fontSize ?? 10)),
       ],
     );
   }
-  
-  Widget  spanVersion(BuildContext context) {
+
+  Widget spanVersion(BuildContext context) {
     return SelectableText.rich(span(context));
   }
 

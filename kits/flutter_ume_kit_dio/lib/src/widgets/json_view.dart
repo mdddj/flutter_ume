@@ -12,27 +12,9 @@ class MyJsonView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final m =  MediaQuery.of(context);
-    final bodyHei = m.size.height - kToolbarHeight - m.padding.top;
     return Scaffold(
       appBar: AppBar(title: Text("格式化显示"),),
-      body: SizedBox(
-        width: double.infinity,
-        height: bodyHei ,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(title),
-            SizedBox(height: 12,),
-            Expanded(
-              child: ListView(children: [
-                widget
-              ],),
-            ),
-            SizedBox(height: 12,)
-          ],
-        ),
-      ),
+      body:widget,
     );
   }
 

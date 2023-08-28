@@ -1,5 +1,17 @@
 # Changelog
 
+
+## 3.0.0
+
+* 升级dio到最新版本`5.3.2
+* 移除无用的依赖
+* 替换`DioError`为`DioException`
+
+
+## 2.0.0
+
+* bug fixed
+
 ## 1.0.0
 
 * 正式版

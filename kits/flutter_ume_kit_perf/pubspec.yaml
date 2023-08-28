@@ -10,13 +10,13 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  vm_service: ^7.1.1
-  flutter_ume: ">=1.0.0 <2.0.0"
+  vm_service: ^9.4.0
+  flutter_ume: ^1.1.2
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  mockito: ^5.0.12
+  mockito: ^5.4.2
   flutter_coverage_badge:
     git:
       url: https://github.com/smileShirely/flutter_coverage_badge.git
