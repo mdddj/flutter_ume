@@ -1,10 +1,5 @@
-///
-/// [Author] Alex (https://github.com/AlexV525)
-/// [Date] 4/13/21 1:58 PM
-///
 import 'package:dio/dio.dart';
 
-import '../constants/constants.dart';
 import '../instances.dart';
 
 int get _timestamp => DateTime.now().millisecondsSinceEpoch;
@@ -17,9 +12,12 @@ int get _timestamp => DateTime.now().millisecondsSinceEpoch;
 ///  - Add [DIO_EXTRA_END_TIME] when a response is respond or thrown an error.
 ///  - Deliver the [Response] to the container.
 class UMEDioInterceptor extends Interceptor {
+   static String startTime = 'ume_start_time';
+   static String endTime = 'ume_end_time';
+
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
-    options.extra[DIO_EXTRA_START_TIME] = _timestamp;
+    options.extra[startTime] = _timestamp;
     handler.next(options);
   }
 
@@ -28,7 +26,7 @@ class UMEDioInterceptor extends Interceptor {
     Response<dynamic> response,
     ResponseInterceptorHandler handler,
   ) {
-    response.requestOptions.extra[DIO_EXTRA_END_TIME] = _timestamp;
+    response.requestOptions.extra[endTime] = _timestamp;
     InspectorInstance.httpContainer.addRequest(response);
     handler.next(response);
   }
@@ -36,7 +34,7 @@ class UMEDioInterceptor extends Interceptor {
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) {
     if(err.response!=null) {
-      err.response!.requestOptions.extra[DIO_EXTRA_END_TIME] = _timestamp;
+      err.response!.requestOptions.extra[endTime] = _timestamp;
       InspectorInstance.httpContainer.addRequest(err.response!);
     }
     handler.next(err);

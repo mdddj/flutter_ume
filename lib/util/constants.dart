@@ -1,6 +1,4 @@
-import 'package:flutter/material.dart';
-
-import 'binding_ambiguate.dart';
+part of '../flutter_ume_plus.dart';
 
 const Size dotSize = Size(65.0, 65.0);
 

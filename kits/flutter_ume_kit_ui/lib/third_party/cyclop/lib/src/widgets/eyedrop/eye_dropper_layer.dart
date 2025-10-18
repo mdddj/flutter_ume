@@ -1,6 +1,5 @@
 import 'dart:ui';
 
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:image/image.dart' as img;
@@ -36,9 +35,8 @@ class _EyeDropperModel {
 class EyeDrop extends InheritedWidget {
   static _EyeDropperModel data = _EyeDropperModel();
 
-  EyeDrop({required Widget child, Key? key})
+  EyeDrop({required Widget child, super.key})
       : super(
-          key: key,
           child: RepaintBoundary(
             key: captureKey,
             child: Listener(
@@ -109,6 +107,7 @@ class EyeDrop extends InheritedWidget {
 
     data.onColorSelected = onColorSelected;
     data.onColorChanged = onColorChanged;
+    final overlay =  Overlay.of(context);
 
     data.snapshot = await repaintBoundaryToImage(renderer);
 
@@ -121,7 +120,7 @@ class EyeDrop extends InheritedWidget {
         cursorPosition: data.cursorPosition,
       ),
     );
-    Overlay.of(context)?.insert(data.eyeOverlayEntry!);
+    overlay.insert(data.eyeOverlayEntry!);
   }
 
   @override

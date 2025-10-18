@@ -1,18 +1,11 @@
-import 'dart:convert';
-import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
-import 'dart:ui' as ui;
-import 'dart:math' as math;
-import 'package:flutter_ume/util/constants.dart';
+part of '../../flutter_ume_plus.dart';
 
 class InspectorOverlay extends LeafRenderObjectWidget {
   const InspectorOverlay(
-      {Key? key,
+      {super.key,
       required this.selection,
       this.needEdges = true,
-      this.needDescription = true})
-      : super(key: key);
+      this.needDescription = true});
 
   final InspectorSelection selection;
 
@@ -192,7 +185,7 @@ class _InspectorOverlayLayer extends Layer {
         ..maxLines = kMaxTooltipLines
         ..ellipsis = '...'
         ..text = TextSpan(
-            style: TextStyle(color: kTipTextColor, fontSize: 12.0, height: 1.2),
+            style: const TextStyle(color: kTipTextColor, fontSize: 12.0, height: 1.2),
             text: message)
         ..textDirection = textDirection
         ..layout(maxWidth: maxWidth);
@@ -300,8 +293,11 @@ class _InspectorOverlayRenderState {
   final _SelectionInfo selectionInfo;
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     if (other.runtimeType != runtimeType) return false;
+    if(other is! _InspectorOverlayRenderState){
+      return false;
+    }
 
     final _InspectorOverlayRenderState typedOther = other;
     return overlayRect == typedOther.overlayRect &&
@@ -323,8 +319,9 @@ class _TransformedRect {
   final Matrix4 transform;
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     if (other.runtimeType != runtimeType) return false;
+    if(other is! _TransformedRect) return false;
     final _TransformedRect typedOther = other;
     return rect == typedOther.rect && transform == typedOther.transform;
   }

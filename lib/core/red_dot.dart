@@ -1,11 +1,6 @@
-import 'dart:async';
-
-import 'package:flutter/material.dart';
-import 'package:flutter_ume/core/pluggable_message_service.dart';
-import 'package:flutter_ume/core/pluggable.dart';
-
+part of '../flutter_ume_plus.dart';
 class RedDot extends StatefulWidget {
-  RedDot({Key? key, required this.pluginDatas, this.size = 16})
+  const RedDot({Key? key, required this.pluginDatas, this.size = 16})
       : super(key: key);
 
   final List<Pluggable?> pluginDatas;
@@ -56,6 +51,11 @@ class _RedDotState extends State<RedDot> {
     }
     return Container(
       height: widget.size,
+      decoration: ShapeDecoration(
+          color: Colors.red,
+          shape: RoundedRectangleBorder(
+              borderRadius:
+                  BorderRadius.all(Radius.circular(widget.size * 0.5)))),
       child: Padding(
         padding: EdgeInsets.only(
             left: widget.size * 0.28, right: widget.size * 0.28),
@@ -68,11 +68,6 @@ class _RedDotState extends State<RedDot> {
           ),
         ),
       ),
-      decoration: ShapeDecoration(
-          color: Colors.red,
-          shape: RoundedRectangleBorder(
-              borderRadius:
-                  BorderRadius.all(Radius.circular(widget.size * 0.5)))),
     );
   }
 }

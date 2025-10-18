@@ -1,20 +1,6 @@
-import 'package:flutter/material.dart'
-    hide FlutterLogo, FlutterLogoDecoration, FlutterLogoStyle;
-import 'package:flutter_ume/core/pluggable_message_service.dart';
-import 'package:flutter_ume/core/ui/panel_action_define.dart';
-import 'package:flutter_ume/core/plugin_manager.dart';
-import 'package:flutter_ume/core/red_dot.dart';
-import 'package:flutter_ume/core/store_manager.dart';
-import 'package:flutter_ume/core/ui/toolbar_widget.dart';
-import 'package:flutter_ume/core/pluggable.dart';
-import 'package:flutter_ume/util/binding_ambiguate.dart';
-import 'package:flutter_ume/util/constants.dart';
-import './menu_page.dart';
-import 'package:flutter_ume/util/flutter_logo.dart';
-import 'global.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
+part of '../../flutter_ume_plus.dart';
 
-const defaultLocalizationsDelegates = const [
+const defaultLocalizationsDelegates = [
   GlobalMaterialLocalizations.delegate,
   GlobalWidgetsLocalizations.delegate,
   GlobalCupertinoLocalizations.delegate,
@@ -25,12 +11,12 @@ final GlobalKey<OverlayState> overlayKey = GlobalKey<OverlayState>();
 /// Wrap your App widget. If [enable] is false, the function will return [child].
 class UMEWidget extends StatefulWidget {
   const UMEWidget({
-    Key? key,
+    super.key,
     required this.child,
     this.enable = true,
     this.supportedLocales,
     this.localizationsDelegates = defaultLocalizationsDelegates,
-  }) : super(key: key);
+  });
 
   final Widget child;
   final bool enable;
@@ -147,12 +133,12 @@ class _UMEWidgetState extends State<UMEWidget> {
       Iterable<LocalizationsDelegate> delegates) {
     return Stack(
       children: <Widget>[
-        RepaintBoundary(child: child, key: rootKey),
+        RepaintBoundary(key: rootKey, child: child),
         MediaQuery(
-          data: MediaQueryData.fromWindow(
+          data: MediaQueryData.fromView(
               bindingAmbiguate(WidgetsBinding.instance)!.window),
           child: Localizations(
-            locale: supportedLocales?.first ?? Locale('en', 'US'),
+            locale: supportedLocales?.first ?? const Locale('en', 'US'),
             delegates: delegates.toList(),
             child: ScaffoldMessenger(child: Overlay(key: overlayKey)),
           ),
@@ -198,7 +184,7 @@ class _UMEWidgetState extends State<UMEWidget> {
 }
 
 class _ContentPage extends StatefulWidget {
-  const _ContentPage({Key? key, this.refreshChildLayout}) : super(key: key);
+  const _ContentPage({super.key, this.refreshChildLayout});
 
   final VoidCallback? refreshChildLayout;
 
@@ -207,13 +193,13 @@ class _ContentPage extends StatefulWidget {
 }
 
 class _ContentPageState extends State<_ContentPage> {
-  PluginStoreManager _storeManager = PluginStoreManager();
+  final PluginStoreManager _storeManager = PluginStoreManager();
   Size _windowSize = windowSize;
   double _dx = 0;
   double _dy = 0;
   bool _showedMenu = false;
   Pluggable? _currentSelected;
-  Widget _empty = Container();
+  final Widget _empty = Container();
   Widget? _currentWidget;
   Widget? _menuPage;
   BuildContext? _context;
@@ -283,10 +269,10 @@ class _ContentPageState extends State<_ContentPage> {
 
   Widget _logoWidget() {
     if (_currentSelected != null) {
-      return Container(
-          child: Image(image: _currentSelected!.iconImageProvider),
+      return SizedBox(
           height: 30,
-          width: 30);
+          width: 30,
+          child: Image(image: _currentSelected!.iconImageProvider));
     }
     return FlutterLogo(size: 40, colors: _showedMenu ? Colors.red : null);
   }
@@ -320,7 +306,7 @@ class _ContentPageState extends State<_ContentPage> {
     });
     _dx = _windowSize.width - dotSize.width - margin * 4;
     _dy = _windowSize.height - dotSize.height - bottomDistance;
-    MenuAction itemTapAction = (pluginData) async {
+    itemTapAction(pluginData) async {
       if (pluginData is PluggableWithAnywhereDoor) {
         dynamic result;
         if (pluginData.routeNameAndArgs != null) {
@@ -342,7 +328,7 @@ class _ContentPageState extends State<_ContentPage> {
         }
         pluginData.onTrigger();
       }
-    };
+    }
     _menuPage = MenuPage(
       action: itemTapAction,
       minimalAction: () {
@@ -379,7 +365,7 @@ class _ContentPageState extends State<_ContentPage> {
           MediaQuery.of(context).size.height - dotSize.height - bottomDistance;
       _windowSize = MediaQuery.of(context).size;
     }
-    return Container(
+    return SizedBox(
       width: _windowSize.width,
       height: _windowSize.height,
       child: Stack(
@@ -402,7 +388,7 @@ class _ContentPageState extends State<_ContentPage> {
                       shape: BoxShape.circle,
                       color: Colors.white,
                       boxShadow: [
-                        const BoxShadow(
+                        BoxShadow(
                             color: Colors.black12,
                             offset: Offset(0.0, 0.0),
                             blurRadius: 2.0,

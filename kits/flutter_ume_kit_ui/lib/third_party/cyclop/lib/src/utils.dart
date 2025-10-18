@@ -1,6 +1,5 @@
 import 'dart:ui' as ui;
 
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:image/image.dart' as img;
@@ -96,7 +95,7 @@ Color getPixelColor(img.Image image, Offset offset) => (offset.dx >= 0 &&
         offset.dy >= 0 &&
         offset.dx < image.width &&
         offset.dy < image.height)
-    ? abgr2Color(image.getPixel(offset.dx.toInt(), offset.dy.toInt()))
+    ? abgr2Color(image.getPixelIndex(offset.dx.toInt(), offset.dy.toInt()))
     : const Color(0x00000000);
 
 ui.Offset _offsetFromIndex(int index, int numColumns) => Offset(
@@ -121,7 +120,7 @@ Future<img.Image?> repaintBoundaryToImage(
     final byteData =
         await rawImage.toByteData(format: ui.ImageByteFormat.rawRgba);
     final pngBytes = byteData!.buffer.asUint8List();
-    return img.Image.fromBytes(rawImage.width, rawImage.height, pngBytes);
+    return img.Image.fromBytes(width: rawImage.width,height: rawImage.height,  bytes: pngBytes.buffer);
   } catch (err) {
     return null;
   }

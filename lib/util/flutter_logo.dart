@@ -1,13 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-
-import 'dart:math' as math;
-import 'dart:ui' as ui show Gradient, TextBox, lerpDouble, Color;
-
-import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart'
-    hide FlutterLogo, FlutterLogoDecoration, FlutterLogoStyle;
+part of '../flutter_ume_plus.dart';
 
 /// The Flutter logo, in widget form. This widget respects the [IconTheme].
 /// For guidelines on using the Flutter logo, visit https://flutter.dev/brand.
@@ -22,14 +13,14 @@ class FlutterLogo extends StatelessWidget {
   ///
   /// The [size] defaults to the value given by the current [IconTheme].
   const FlutterLogo({
-    Key? key,
+    super.key,
     this.size,
     this.colors,
     this.textColor = const Color(0xFF616161),
     this.style = FlutterLogoStyle.markOnly,
     this.duration = const Duration(milliseconds: 750),
     this.curve = Curves.fastOutSlowIn,
-  }) : super(key: key);
+  });
 
   /// The size of the logo in logical pixels.
   ///
@@ -276,7 +267,7 @@ class FlutterLogoDecoration extends Decoration {
   }
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     assert(debugAssertIsValid());
     if (identical(this, other)) return true;
     if (other is! FlutterLogoDecoration) return false;

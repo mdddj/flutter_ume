@@ -1,13 +1,13 @@
 import 'package:dio/dio.dart' show Response;
 
-import 'constants.dart';
+import '../../flutter_ume_kit_dio_plus.dart';
 
 extension ResponseExtension on Response<dynamic> {
   int get startTimeMilliseconds =>
-      requestOptions.extra[DIO_EXTRA_START_TIME] as int;
+      requestOptions.extra[UMEDioInterceptor.startTime] as int;
 
   int get endTimeMilliseconds =>
-      requestOptions.extra[DIO_EXTRA_END_TIME] as int;
+      requestOptions.extra[UMEDioInterceptor.endTime] as int;
 
   DateTime get startTime =>
       DateTime.fromMillisecondsSinceEpoch(startTimeMilliseconds);

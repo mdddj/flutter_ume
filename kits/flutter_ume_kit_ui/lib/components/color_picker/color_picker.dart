@@ -1,7 +1,4 @@
-import 'package:flutter_ume_kit_ui/third_party/cyclop/lib/cyclop.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_ume/flutter_ume.dart';
-import 'icon.dart' as icon;
+part of '../../flutter_ume_kit_ui_plus.dart';
 
 class ColorPicker extends StatefulWidget implements PluggableWithNestedWidget {
   const ColorPicker({Key? key}) : super(key: key);
@@ -22,7 +19,7 @@ class ColorPicker extends StatefulWidget implements PluggableWithNestedWidget {
   void onTrigger() {}
 
   @override
-  ImageProvider<Object> get iconImageProvider => MemoryImage(icon.iconBytes);
+  ImageProvider<Object> get iconImageProvider => MemoryImage(iconBytesWithColorPicker);
 
   @override
   Widget buildNestedWidget(Widget child) {
@@ -31,7 +28,7 @@ class ColorPicker extends StatefulWidget implements PluggableWithNestedWidget {
 }
 
 class _ColorPickerState extends State<ColorPicker> {
-  final colorTextStyle = TextStyle(
+  final colorTextStyle = const TextStyle(
       fontFamily: "Monospace", fontWeight: FontWeight.bold, fontSize: 20);
 
   Color? _color;
@@ -56,7 +53,7 @@ class _ColorPickerState extends State<ColorPicker> {
             child: Padding(
               padding: const EdgeInsets.only(top: 28, bottom: 28),
               child: Container(
-                  decoration: ShapeDecoration(
+                  decoration: const ShapeDecoration(
                     shape: StadiumBorder(),
                     color: Colors.white,
                     shadows: [
@@ -85,22 +82,22 @@ class _ColorPickerState extends State<ColorPicker> {
                               text: TextSpan(children: [
                             TextSpan(
                                 text:
-                                    '${_color?.hexARGB.toString().substring(0, 2) ?? '👈🏻Tap to pick'}',
+                                    _color?.hexARGB.toString().substring(0, 2) ?? '👈🏻Tap to pick',
                                 style: colorTextStyle.copyWith(
                                     color: Colors.grey)),
                             TextSpan(
                                 text:
-                                    '${_color?.hexARGB.toString().substring(2, 4) ?? ''}',
+                                    _color?.hexARGB.toString().substring(2, 4) ?? '',
                                 style:
                                     colorTextStyle.copyWith(color: Colors.red)),
                             TextSpan(
                                 text:
-                                    '${_color?.hexARGB.toString().substring(4, 6) ?? ''}',
+                                    _color?.hexARGB.toString().substring(4, 6) ?? '',
                                 style: colorTextStyle.copyWith(
                                     color: Colors.green)),
                             TextSpan(
                                 text:
-                                    '${_color?.hexARGB.toString().substring(6, 8) ?? ''}',
+                                    _color?.hexARGB.toString().substring(6, 8) ?? '',
                                 style: colorTextStyle.copyWith(
                                     color: Colors.blue)),
                           ])),

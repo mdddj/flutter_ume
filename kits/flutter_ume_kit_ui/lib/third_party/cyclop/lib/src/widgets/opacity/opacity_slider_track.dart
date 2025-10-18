@@ -17,24 +17,22 @@ class OpacitySliderTrack extends SliderTrackShape with BaseSliderTrackShape {
           );
 
   @override
-  void paint(
-    PaintingContext context,
-    Offset offset, {
-    required RenderBox parentBox,
-    required SliderThemeData sliderTheme,
-    required Animation<double> enableAnimation,
-    required TextDirection textDirection,
-    required Offset thumbCenter,
-    bool isDiscrete = false,
-    bool isEnabled = false,
-    double additionalActiveTrackHeight = 2,
-  }) {
+  void paint(PaintingContext context, ui.Offset offset,
+      {required RenderBox parentBox,
+      required SliderThemeData sliderTheme,
+      required Animation<double> enableAnimation,
+      required ui.Offset thumbCenter,
+      ui.Offset? secondaryOffset,
+      bool? isEnabled,
+      bool? isDiscrete,
+      required ui.TextDirection textDirection}) {
+    const additionalActiveTrackHeight = 2;
     final trackRect = getPreferredRect(
       parentBox: parentBox,
       offset: offset,
       sliderTheme: sliderTheme,
-      isEnabled: isEnabled,
-      isDiscrete: isDiscrete,
+      isEnabled: isEnabled ?? false,
+      isDiscrete: isDiscrete ?? false,
     );
     final trackRadius = Radius.circular(trackRect.height / 2);
     final activeTrackRadius = Radius.circular(trackRect.height / 2 + 1);

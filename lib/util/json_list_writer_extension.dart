@@ -1,4 +1,4 @@
-import 'dart:core';
+part of '../flutter_ume_plus.dart';
 
 extension JsonListPathWriter on List {
   List write(String path, dynamic value) {

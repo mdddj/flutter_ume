@@ -1,9 +1,4 @@
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'dart:ui' as ui;
-
-import 'package:flutter_ume_kit_channel_monitor/src/core/channel_info_model.dart';
-import 'package:flutter_ume_kit_channel_monitor/src/core/channel_store.dart';
+part of '../../flutter_ume_kit_channel_monitor_plus.dart';
 
 class _ChannelController {
   final StandardMethodCodec codec = const StandardMethodCodec();

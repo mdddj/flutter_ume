@@ -34,8 +34,8 @@ class ChannelSlider extends StatelessWidget {
     required this.onChange,
     required this.label,
     required this.labelGetter,
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   double get channelValue => channelValueGetter(selectedColor);
 
@@ -51,7 +51,7 @@ class ChannelSlider extends StatelessWidget {
         children: [
           Padding(
             padding: const EdgeInsets.only(left: 8.0),
-            child: Text(label, style: textTheme.subtitle2),
+            child: Text(label, style: textTheme.titleSmall),
           ),
           Row(
             mainAxisSize: MainAxisSize.max,
@@ -79,7 +79,7 @@ class ChannelSlider extends StatelessWidget {
                 child: Text(
                   labelGetter(selectedColor),
                   textAlign: TextAlign.center,
-                  style: textTheme.bodyText1,
+                  style: textTheme.bodyMedium,
                 ),
               )
             ],
@@ -96,19 +96,45 @@ class ChannelSliderTrack extends SliderTrackShape with BaseSliderTrackShape {
 
   const ChannelSliderTrack(this.selectedColor, this.colors);
 
+  // @override
+  // void paint(
+  //   PaintingContext context,
+  //   Offset offset, {
+  //   required RenderBox parentBox,
+  //   required SliderThemeData sliderTheme,
+  //   required Animation<double> enableAnimation,
+  //   required TextDirection textDirection,
+  //   required Offset thumbCenter,
+  //   bool isDiscrete = false,
+  //   bool isEnabled = false,
+  //   double additionalActiveTrackHeight = 2,
+  // }) {
+  //
+  // }
+
+  List<double> _impliedStops() {
+    assert(colors.length >= 2, 'colors list must have at least two colors');
+    final separation = 1.0 / (colors.length - 1);
+    return List<double>.generate(
+      colors.length,
+      (int index) => index * separation,
+      growable: false,
+    );
+  }
+
   @override
-  void paint(
-    PaintingContext context,
-    Offset offset, {
-    required RenderBox parentBox,
-    required SliderThemeData sliderTheme,
-    required Animation<double> enableAnimation,
-    required TextDirection textDirection,
-    required Offset thumbCenter,
-    bool isDiscrete = false,
-    bool isEnabled = false,
-    double additionalActiveTrackHeight = 2,
-  }) {
+  void paint(PaintingContext context, ui.Offset offset,
+      {required RenderBox parentBox,
+      required SliderThemeData sliderTheme,
+      required Animation<double> enableAnimation,
+      required ui.Offset thumbCenter,
+      ui.Offset? secondaryOffset,
+      bool? isEnabled,
+      bool? isDiscrete,
+      required ui.TextDirection textDirection}) {
+
+    const additionalActiveTrackHeight = 2;
+
     assert(sliderTheme.disabledActiveTrackColor != null);
     assert(sliderTheme.disabledInactiveTrackColor != null);
     assert(sliderTheme.activeTrackColor != null);
@@ -119,8 +145,8 @@ class ChannelSliderTrack extends SliderTrackShape with BaseSliderTrackShape {
       parentBox: parentBox,
       offset: offset,
       sliderTheme: sliderTheme,
-      isEnabled: isEnabled,
-      isDiscrete: isDiscrete,
+      isEnabled: isEnabled ?? false,
+      isDiscrete: isDiscrete ?? false,
     );
     final trackRadius = Radius.circular(trackRect.height / 2);
     final activeTrackRadius = Radius.circular(trackRect.height / 2 + 1);
@@ -175,15 +201,5 @@ class ChannelSliderTrack extends SliderTrackShape with BaseSliderTrackShape {
 
     context.canvas.drawRRect(shapeRect, leftTrackPaint);
     context.canvas.drawRRect(shapeRect, rightTrackPaint);
-  }
-
-  List<double> _impliedStops() {
-    assert(colors.length >= 2, 'colors list must have at least two colors');
-    final separation = 1.0 / (colors.length - 1);
-    return List<double>.generate(
-      colors.length,
-      (int index) => index * separation,
-      growable: false,
-    );
   }
 }

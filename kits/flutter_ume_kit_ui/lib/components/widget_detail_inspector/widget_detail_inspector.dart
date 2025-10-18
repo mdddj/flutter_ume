@@ -1,20 +1,13 @@
-import 'dart:async';
-import 'dart:math';
-import 'package:flutter/material.dart';
-import 'package:flutter_ume_kit_ui/components/hit_test.dart';
-import 'package:flutter_ume/flutter_ume.dart';
-import 'package:flutter_ume_kit_ui/util/binding_ambiguate.dart';
-import 'search_bar.dart';
-import 'icon.dart' as icon;
+part of '../../flutter_ume_kit_ui_plus.dart';
 
 class WidgetDetailInspector extends StatelessWidget implements Pluggable {
-  const WidgetDetailInspector({Key? key}) : super(key: key);
+  const WidgetDetailInspector({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       theme: ThemeData(primaryColor: Colors.white),
-      home: _DetailPage(),
+      home: const _DetailPage(),
     );
   }
 
@@ -22,7 +15,7 @@ class WidgetDetailInspector extends StatelessWidget implements Pluggable {
   Widget buildWidget(BuildContext? context) => this;
 
   @override
-  ImageProvider<Object> get iconImageProvider => MemoryImage(icon.iconBytes);
+  ImageProvider<Object> get iconImageProvider => MemoryImage(iconBytesWithDetailInspector);
 
   @override
   String get name => 'WidgetDetail';
@@ -35,7 +28,7 @@ class WidgetDetailInspector extends StatelessWidget implements Pluggable {
 }
 
 class _DetailPage extends StatefulWidget {
-  const _DetailPage({Key? key}) : super(key: key);
+  const _DetailPage();
 
   @override
   _DetailPageState createState() => _DetailPageState();
@@ -66,7 +59,7 @@ class _DetailPageState extends State<_DetailPage> with WidgetsBindingObserver {
     if (_lastPointerLocation != null) {
       _inspectAt(_lastPointerLocation);
     }
-    Future.delayed(Duration(milliseconds: 100), () {
+    Future.delayed(const Duration(milliseconds: 100), () {
       Navigator.of(context).push(MaterialPageRoute(builder: (ctx) {
         return _InfoPage(
             elements: selection.currentElement!.debugGetDiagnosticChain());
@@ -96,7 +89,7 @@ class _DetailPageState extends State<_DetailPage> with WidgetsBindingObserver {
     children.add(gesture);
     children.add(InspectorOverlay(
         selection: selection, needDescription: false, needEdges: false));
-    return Stack(children: children, textDirection: TextDirection.ltr);
+    return Stack(textDirection: TextDirection.ltr, children: children);
   }
 }
 
@@ -111,9 +104,7 @@ class _DetailModel {
 }
 
 class _InfoPage extends StatefulWidget {
-  const _InfoPage({Key? key, required this.elements})
-      : assert(elements != null),
-        super(key: key);
+  const _InfoPage({required this.elements});
 
   final List<Element> elements;
 
@@ -128,9 +119,9 @@ class __InfoPageState extends State<_InfoPage> {
   @override
   void initState() {
     super.initState();
-    widget.elements.forEach((f) {
+    for (var f in widget.elements) {
       _showList.add(_DetailModel(f));
-    });
+    }
     _originalList = _showList;
   }
 
@@ -153,8 +144,8 @@ class __InfoPageState extends State<_InfoPage> {
           return Scaffold(
               body: _DetailContent(element: model.element),
               appBar: PreferredSize(
-                  child: AppBar(elevation: 0.0, title: Text("widget_detail")),
-                  preferredSize: Size.fromHeight(44)));
+                  preferredSize: const Size.fromHeight(44),
+                  child: AppBar(elevation: 0.0, title: const Text("widget_detail"))));
         }));
       },
       child: Container(
@@ -166,8 +157,8 @@ class __InfoPageState extends State<_InfoPage> {
                 child: _dot(model.colors)),
             Expanded(
                 child: Text(
-              "${model.element.widget.toStringShort()}",
-              style: TextStyle(fontSize: 15),
+              model.element.widget.toStringShort(),
+              style: const TextStyle(fontSize: 15),
             ))
           ],
         ),
@@ -178,12 +169,12 @@ class __InfoPageState extends State<_InfoPage> {
   void _textChange(String query) {
     query = query.trim();
     List<_DetailModel> infoList = [];
-    _originalList.forEach((_DetailModel model) {
-      var regExp = RegExp("$query", caseSensitive: false);
+    for (var model in _originalList) {
+      var regExp = RegExp(query, caseSensitive: false);
       if (regExp.hasMatch(model.element.widget.toStringShort())) {
         infoList.add(model);
       }
-    });
+    }
     setState(() {
       _showList = infoList;
     });
@@ -208,7 +199,7 @@ class __InfoPageState extends State<_InfoPage> {
                     FocusScope.of(context).requestFocus(FocusNode());
                   },
                   child: ListView.builder(
-                      physics: BouncingScrollPhysics(),
+                      physics: const BouncingScrollPhysics(),
                       itemBuilder: (_, index) {
                         _DetailModel model = _showList[index];
                         return _cell(model, context);
@@ -220,12 +211,13 @@ class __InfoPageState extends State<_InfoPage> {
           ),
         ),
         appBar: PreferredSize(
+            preferredSize: const Size.fromHeight(44),
             child: AppBar(
                 elevation: 0.0,
                 title: RichText(
                   text: TextSpan(
                     text: 'widget_build_chain',
-                    style: TextStyle(
+                    style: const TextStyle(
                         color: Colors.black,
                         fontSize: 19,
                         fontWeight: FontWeight.w500,
@@ -233,18 +225,15 @@ class __InfoPageState extends State<_InfoPage> {
                     children: <TextSpan>[
                       TextSpan(
                           text: '  depth: ${widget.elements.length}',
-                          style: TextStyle(color: Colors.black, fontSize: 11)),
+                          style: const TextStyle(color: Colors.black, fontSize: 11)),
                     ],
                   ),
-                )),
-            preferredSize: Size.fromHeight(44)));
+                ))));
   }
 }
 
 class _DetailContent extends StatelessWidget {
-  const _DetailContent({Key? key, required this.element})
-      : assert(element != null),
-        super(key: key);
+  const _DetailContent({required this.element});
 
   final Element element;
 
@@ -272,7 +261,7 @@ class _DetailContent extends StatelessWidget {
         future: getInfo(),
         builder: (_, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(
+            return const Center(
                 child: CircularProgressIndicator(
                     valueColor: AlwaysStoppedAnimation<Color>(Colors.red)));
           } else if (snapshot.connectionState == ConnectionState.done) {
@@ -282,7 +271,7 @@ class _DetailContent extends StatelessWidget {
                 children: [
                   _titleWidget("Widget Description"),
                   Container(
-                      constraints: BoxConstraints(maxHeight: 200),
+                      constraints: const BoxConstraints(maxHeight: 200),
                       padding:
                           const EdgeInsets.only(top: 12, left: 12, right: 12),
                       child: SingleChildScrollView(
@@ -293,12 +282,12 @@ class _DetailContent extends StatelessWidget {
                           padding: const EdgeInsets.only(
                               top: 12, right: 12, left: 12),
                           child: ListView.builder(
-                              physics: BouncingScrollPhysics(),
+                              physics: const BouncingScrollPhysics(),
                               itemBuilder: (_, index) {
                                 return SingleChildScrollView(
+                                    scrollDirection: Axis.horizontal,
                                     child: Text(
-                                        (snapshot.data as List<String>)[index]),
-                                    scrollDirection: Axis.horizontal);
+                                        (snapshot.data as List<String>)[index]));
                               },
                               itemCount:
                                   (snapshot.data as List<String>).length))),

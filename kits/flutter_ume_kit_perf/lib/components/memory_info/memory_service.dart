@@ -1,5 +1,4 @@
-import 'package:vm_service/vm_service.dart';
-import 'package:flutter_ume/flutter_ume.dart';
+part of flutter_ume_kit_perf_plus;
 
 class Property {
   final bool? isConst;
@@ -10,17 +9,17 @@ class Property {
 
   String get propertyStr {
     StringBuffer val = StringBuffer();
-    if (this.isStatic!) {
+    if (isStatic!) {
       val.write("static");
       val.write(' ');
-    } else if (this.isConst!) {
+    } else if (isConst!) {
       val.write("const");
       val.write(' ');
     } else {
       val.write('final');
       val.write(' ');
     }
-    return "${val.toString()}  ${this.type}   ${this.name}";
+    return "${val.toString()}  $type   $name";
   }
 
   Property(this.isConst, this.isStatic, this.isFinal, this.type, this.name);

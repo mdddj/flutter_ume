@@ -1,3 +1,4 @@
+part of '../../flutter_ume_kit_channel_monitor_plus.dart';
 class ChannelInfoModel {
   // channel 传输方向
   final TransDirection direction;

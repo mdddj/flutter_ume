@@ -1,21 +1,15 @@
-import 'dart:math';
-
-import 'package:flutter/material.dart';
-import 'package:flutter_ume/core/ui/panel_action_define.dart';
-import 'package:flutter_ume/util/constants.dart';
-import 'package:tuple/tuple.dart';
-import 'package:flutter_ume/util/store_mixin.dart';
+part of '../flutter_ume_plus.dart';
 
 typedef ToolbarAction = void Function();
 
 class FloatingWidget extends StatefulWidget {
-  FloatingWidget({
-    Key? key,
+  const FloatingWidget({
+    super.key,
     this.contentWidget,
     this.closeAction,
     this.toolbarActions,
     this.minimalHeight = 120,
-  }) : super(key: key);
+  });
 
   final Widget? contentWidget;
   final CloseAction? closeAction;
@@ -26,7 +20,7 @@ class FloatingWidget extends StatefulWidget {
   _FloatingWidgetState createState() => _FloatingWidgetState();
 }
 
-const double _dragBarHeight = 32;
+const double _dragBarHeight2 = 32;
 const double _toolBarHeight = 32;
 
 class _FloatingWidgetState extends State<FloatingWidget> with StoreMixin {
@@ -50,18 +44,18 @@ class _FloatingWidgetState extends State<FloatingWidget> with StoreMixin {
     });
     _dy = _windowSize.height -
         widget.minimalHeight -
-        _dragBarHeight -
+        _dragBarHeight2 -
         toolBarHeight;
     super.initState();
   }
 
   void _dragEvent(DragUpdateDetails details) {
     _dy += details.delta.dy;
-    _dy = min(
-        max(0, _dy),
+    _dy = math.min(
+        math.max(0, _dy),
         MediaQuery.of(context).size.height -
             widget.minimalHeight -
-            _dragBarHeight -
+            _dragBarHeight2 -
             toolBarHeight -
             MediaQuery.of(context).padding.top -
             MediaQuery.of(context).padding.bottom);
@@ -79,14 +73,14 @@ class _FloatingWidgetState extends State<FloatingWidget> with StoreMixin {
           MediaQuery.of(context).size.height - dotSize.height - bottomDistance;
       _windowSize = MediaQuery.of(context).size;
     }
-    return Container(
+    return SizedBox(
         width: _windowSize.width,
         height: _windowSize.height,
         child: Stack(alignment: Alignment.center, children: <Widget>[
           Positioned(
             left: 0,
             top: _fullScreen ? 0 : _dy,
-            child: _ToolBarContent(
+            child: __ToolBarContent2(
               minimalHeight: widget.minimalHeight,
               contentWidget: widget.contentWidget,
               dragCallback: _dragEvent,
@@ -104,17 +98,15 @@ class _FloatingWidgetState extends State<FloatingWidget> with StoreMixin {
   }
 }
 
-class _ToolBarContent extends StatefulWidget {
-  _ToolBarContent(
-      {Key? key,
-      this.contentWidget,
+class __ToolBarContent2 extends StatefulWidget {
+  const __ToolBarContent2(
+      {this.contentWidget,
       this.dragCallback,
       this.dragEnd,
       this.maximalAction,
       this.closeAction,
       this.toolbarActions,
-      required this.minimalHeight})
-      : super(key: key);
+      required this.minimalHeight});
 
   final Widget? contentWidget;
   final Function? dragCallback;
@@ -125,10 +117,10 @@ class _ToolBarContent extends StatefulWidget {
   final double minimalHeight;
 
   @override
-  __ToolBarContentState createState() => __ToolBarContentState();
+  ___ToolBarContent2State createState() => ___ToolBarContent2State();
 }
 
-class __ToolBarContentState extends State<_ToolBarContent> {
+class ___ToolBarContent2State extends State<__ToolBarContent2> {
   bool _fullScreen = false;
   Size _windowSize = windowSize;
 
@@ -146,10 +138,10 @@ class __ToolBarContentState extends State<_ToolBarContent> {
     return SafeArea(
       child: Material(
         borderRadius:
-            BorderRadius.only(topLeft: cornerRadius, topRight: cornerRadius),
+            const BorderRadius.only(topLeft: cornerRadius, topRight: cornerRadius),
         elevation: 20,
         child: Container(
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             borderRadius: BorderRadius.only(
                 topLeft: cornerRadius, topRight: cornerRadius),
             color: Color(0xffd0d0d0),
@@ -157,11 +149,11 @@ class __ToolBarContentState extends State<_ToolBarContent> {
           width: MediaQuery.of(context).size.width,
           height: _fullScreen
               ? _windowSize.height
-              : widget.minimalHeight + _dragBarHeight + toolBarHeight,
+              : widget.minimalHeight + _dragBarHeight2 + toolBarHeight,
           child: Column(
             children: [
-              Container(
-                height: _dragBarHeight,
+              SizedBox(
+                height: _dragBarHeight2,
                 child: Padding(
                   padding: const EdgeInsets.only(left: 8, right: 8),
                   child: Row(
@@ -174,7 +166,7 @@ class __ToolBarContentState extends State<_ToolBarContent> {
                           },
                           child: const CircleAvatar(
                             radius: 10,
-                            backgroundColor: const Color(0xffff5a52),
+                            backgroundColor: Color(0xffff5a52),
                           )),
                       const SizedBox(
                         width: 8,
@@ -196,16 +188,15 @@ class __ToolBarContentState extends State<_ToolBarContent> {
                           )),
                       Expanded(
                         child: GestureDetector(
-                          onVerticalDragUpdate: (details) =>
-                              _dragCallback(details),
-                          onVerticalDragEnd: (details) => _dragEnd(details),
+                          onVerticalDragUpdate: _dragCallback,
+                          onVerticalDragEnd: _dragEnd,
                           child: Container(
-                            height: _dragBarHeight,
+                            height: _dragBarHeight2,
                             color: const Color(0xffd0d0d0),
-                            child: Center(
+                            child: const Center(
                               child: Text(
                                 'UME',
-                                style: const TextStyle(
+                                style: TextStyle(
                                     color: Color(0xff575757),
                                     fontSize: 14,
                                     fontWeight: FontWeight.w600),
@@ -218,10 +209,10 @@ class __ToolBarContentState extends State<_ToolBarContent> {
                   ),
                 ),
               ),
-              Container(
+              SizedBox(
                 height: _fullScreen
                     ? _windowSize.height -
-                        _dragBarHeight -
+                        _dragBarHeight2 -
                         toolBarHeight -
                         MediaQuery.of(context).padding.top -
                         MediaQuery.of(context).padding.bottom
@@ -245,15 +236,13 @@ class __ToolBarContentState extends State<_ToolBarContent> {
                         return Padding(
                           padding: const EdgeInsets.only(left: 6, right: 6),
                           child: GestureDetector(
-                            child: Container(
-                              child: Row(
-                                children: [
-                                  widget,
-                                  Text(title),
-                                ],
-                              ),
-                            ),
                             onTap: action,
+                            child: Row(
+                              children: [
+                                widget,
+                                Text(title),
+                              ],
+                            ),
                           ),
                         );
                       }).toList(),

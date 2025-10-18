@@ -1,7 +1,4 @@
-import 'package:touch_indicator/touch_indicator.dart' as ti;
-import 'package:flutter/material.dart';
-import 'package:flutter_ume/flutter_ume.dart';
-import 'icon.dart' as icon;
+part of '../../flutter_ume_kit_ui_plus.dart';
 
 class TouchIndicator extends StatelessWidget
     implements PluggableWithNestedWidget {
@@ -20,7 +17,7 @@ class TouchIndicator extends StatelessWidget
   void onTrigger() {}
 
   @override
-  ImageProvider<Object> get iconImageProvider => MemoryImage(icon.iconBytes);
+  ImageProvider<Object> get iconImageProvider => MemoryImage(iconBytesWithTouchIndicator);
 
   @override
   Widget buildNestedWidget(Widget child) {

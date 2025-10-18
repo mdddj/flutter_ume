@@ -1,9 +1,4 @@
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter_ume/util/constants.dart';
-import 'package:flutter_ume_kit_ui/components/hit_test.dart';
-import 'package:flutter_ume/flutter_ume.dart';
-import 'icon.dart' as icon;
+part of flutter_ume_kit_ui_plus;
 
 class AlignRuler extends StatefulWidget implements Pluggable {
   AlignRuler({Key? key}) : super(key: key);
@@ -15,7 +10,7 @@ class AlignRuler extends StatefulWidget implements Pluggable {
   Widget buildWidget(BuildContext? context) => this;
 
   @override
-  ImageProvider<Object> get iconImageProvider => MemoryImage(icon.iconBytes);
+  ImageProvider<Object> get iconImageProvider => MemoryImage(iconBytesAlignRuler);
 
   @override
   String get name => 'AlignRuler';
@@ -29,15 +24,15 @@ class AlignRuler extends StatefulWidget implements Pluggable {
 
 class _AlignRulerState extends State<AlignRuler> {
   Size _windowSize = windowSize;
-  final Size _dotSize = Size(80, 80);
+  final Size _dotSize = const Size(80, 80);
   Offset _dotPosition = Offset.zero;
   BorderRadius? _radius;
   late Offset _dotOffset;
-  final TextStyle _fontStyle = TextStyle(color: Colors.red, fontSize: 15);
+  final TextStyle _fontStyle = const TextStyle(color: Colors.red, fontSize: 15);
   Size _textSize = Size.zero;
   double _toolBarY = 60.0;
   bool _switched = false;
-  InspectorSelection _selection = WidgetInspectorService.instance.selection;
+  final InspectorSelection _selection = WidgetInspectorService.instance.selection;
 
   @override
   void initState() {
@@ -126,8 +121,8 @@ class _AlignRulerState extends State<AlignRuler> {
       decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            const BoxShadow(
+          boxShadow: const [
+            BoxShadow(
                 color: Colors.black26, blurRadius: 6, offset: Offset(2, 2))
           ]),
       padding: const EdgeInsets.only(bottom: 16, top: 12),
@@ -145,7 +140,7 @@ class _AlignRulerState extends State<AlignRuler> {
                     children: <Widget>[
                       Text('Left: ${_dotPosition.dx.toStringAsFixed(1)}',
                           style: style),
-                      Padding(padding: const EdgeInsets.only(top: 8)),
+                      const Padding(padding: EdgeInsets.only(top: 8)),
                       Text(
                           'Right: ${(_windowSize.width - _dotPosition.dx).toStringAsFixed(1)}',
                           style: style),
@@ -158,7 +153,7 @@ class _AlignRulerState extends State<AlignRuler> {
                     children: <Widget>[
                       Text('Top: ${_dotPosition.dy.toStringAsFixed(1)}',
                           style: style),
-                      Padding(padding: const EdgeInsets.only(top: 8)),
+                      const Padding(padding: EdgeInsets.only(top: 8)),
                       Text(
                           'Bottom: ${(_windowSize.height - _dotPosition.dy).toStringAsFixed(1)}',
                           style: style),
@@ -183,11 +178,11 @@ class _AlignRulerState extends State<AlignRuler> {
                         activeColor: Colors.red),
                   ),
                 ),
-                Expanded(
+                const Expanded(
                   child: Padding(
-                    padding: const EdgeInsets.only(left: 10),
+                    padding: EdgeInsets.only(left: 10),
                     child: Text('开启后松手将会自动吸附至最近widget',
-                        style: const TextStyle(
+                        style: TextStyle(
                             color: Colors.red, fontWeight: FontWeight.w500)),
                   ),
                 )
@@ -211,12 +206,12 @@ class _AlignRulerState extends State<AlignRuler> {
           Positioned(
               top: horizontalTop,
               left: _dotPosition.dx / 2 - _textSize.width / 2,
-              child: Text('${_dotPosition.dx.toStringAsFixed(1)}',
+              child: Text(_dotPosition.dx.toStringAsFixed(1),
                   style: _fontStyle)),
           Positioned(
               left: verticalLeft,
               top: _dotPosition.dy / 2 - _textSize.height / 2,
-              child: Text('${_dotPosition.dy.toStringAsFixed(1)}',
+              child: Text(_dotPosition.dy.toStringAsFixed(1),
                   style: _fontStyle)),
           Positioned(
               left: _dotPosition.dx +
@@ -224,7 +219,7 @@ class _AlignRulerState extends State<AlignRuler> {
                   _textSize.width / 2,
               top: horizontalTop,
               child: Text(
-                  '${(_windowSize.width - _dotPosition.dx).toStringAsFixed(1)}',
+                  (_windowSize.width - _dotPosition.dx).toStringAsFixed(1),
                   style: _fontStyle)),
           Positioned(
               top: _dotPosition.dy +
@@ -232,7 +227,7 @@ class _AlignRulerState extends State<AlignRuler> {
                   _textSize.height / 2,
               left: verticalLeft,
               child: Text(
-                  '${(_windowSize.height - _dotPosition.dy).toStringAsFixed(1)}',
+                  (_windowSize.height - _dotPosition.dy).toStringAsFixed(1),
                   style: _fontStyle)),
           Positioned(
               left: _dotPosition.dx,
@@ -257,6 +252,11 @@ class _AlignRulerState extends State<AlignRuler> {
               onPanUpdate: _onPanUpdate,
               onPanEnd: _onPanEnd,
               child: Container(
+                height: _dotSize.height,
+                width: _dotSize.width,
+                decoration: BoxDecoration(
+                    borderRadius: _radius,
+                    border: Border.all(color: Colors.black, width: 2)),
                 child: Center(
                   child: Container(
                     height: _dotSize.width / 2.5,
@@ -266,11 +266,6 @@ class _AlignRulerState extends State<AlignRuler> {
                         color: Colors.red.withOpacity(0.8)),
                   ),
                 ),
-                height: _dotSize.height,
-                width: _dotSize.width,
-                decoration: BoxDecoration(
-                    borderRadius: _radius,
-                    border: Border.all(color: Colors.black, width: 2)),
               ),
             ),
           ),

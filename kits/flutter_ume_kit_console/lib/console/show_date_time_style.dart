@@ -1,3 +1,5 @@
+part of '../flutter_ume_kit_console_plus.dart';
+
 enum ShowDateTimeStyle { datetime, time, timestamp, none }
 
 ShowDateTimeStyle styleById(int id) {

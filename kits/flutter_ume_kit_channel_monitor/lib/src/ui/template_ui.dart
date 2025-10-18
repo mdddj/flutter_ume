@@ -1,16 +1,15 @@
-import 'package:flutter/material.dart';
-
+part of '../../flutter_ume_kit_channel_monitor_plus.dart';
 class TemplatePageWidget extends StatelessWidget {
   final String title;
   final Widget body;
   final VoidCallback? onBackPressed;
 
   const TemplatePageWidget({
-    Key? key,
+    super.key,
     required this.title,
     required this.body,
     this.onBackPressed,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -69,8 +68,7 @@ class TemplatePageWidget extends StatelessWidget {
 class TemplateItemWidget extends StatelessWidget {
   final String title;
   final VoidCallback onTap;
-  const TemplateItemWidget({Key? key, required this.title, required this.onTap})
-      : super(key: key);
+  const TemplateItemWidget({super.key, required this.title, required this.onTap});
 
   @override
   Widget build(BuildContext context) {

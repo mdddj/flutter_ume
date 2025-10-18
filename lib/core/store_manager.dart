@@ -1,11 +1,11 @@
-import 'package:shared_preferences/shared_preferences.dart';
+part of '../flutter_ume_plus.dart';
 
 class PluginStoreManager {
   final String _pluginStoreKey = 'PluginStoreKey';
   final String _minimalToolbarSwitch = 'MinimalToolbarSwitch';
   final String _floatingDotPos = 'FloatingDotPos';
 
-  Future<SharedPreferences> _sharedPref = SharedPreferences.getInstance();
+  final Future<SharedPreferences> _sharedPref = SharedPreferences.getInstance();
 
   Future<List<String>?> fetchStorePlugins() async {
     final SharedPreferences prefs = await _sharedPref;

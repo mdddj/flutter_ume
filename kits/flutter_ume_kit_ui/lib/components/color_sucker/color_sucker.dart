@@ -1,20 +1,14 @@
-import 'dart:typed_data';
-import 'dart:ui' as ui;
-import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
-import 'package:image/image.dart' as img;
-import 'package:flutter_ume/flutter_ume.dart';
-import 'icon.dart' as icon;
+part of '../../flutter_ume_kit_ui_plus.dart';
 
 class ColorSucker extends StatefulWidget implements Pluggable {
   final double scale;
   final Size size;
 
   const ColorSucker({
-    Key? key,
+    super.key,
     this.scale = 10.0,
     this.size = const Size(100, 100),
-  }) : super(key: key);
+  });
 
   @override
   _ColorSuckerState createState() => _ColorSuckerState();
@@ -32,13 +26,13 @@ class ColorSucker extends StatefulWidget implements Pluggable {
   void onTrigger() {}
 
   @override
-  ImageProvider<Object> get iconImageProvider => MemoryImage(icon.iconBytes);
+  ImageProvider<Object> get iconImageProvider => MemoryImage(iconBytesWithColorSucker);
 }
 
 class _ColorSuckerState extends State<ColorSucker> {
   late Size _magnifierSize;
   double? _scale;
-  BorderRadius? _radius;
+  BorderRadius _radius = BorderRadius.zero;
   Color _currentColor = Colors.white;
   img.Image? _snapshot;
   Offset _magnifierPosition = Offset.zero;
@@ -129,7 +123,7 @@ class _ColorSuckerState extends State<ColorSucker> {
     if (_snapshot == null) return;
     double px = globalPosition.dx;
     double py = globalPosition.dy;
-    int pixel32 = _snapshot!.getPixelSafe(px.toInt(), py.toInt());
+    int pixel32 = _snapshot!.getPixelIndex(px.toInt(), py.toInt());
     int hex = _abgrToArgb(pixel32);
     _currentColor = Color(hex);
   }
@@ -152,8 +146,8 @@ class _ColorSuckerState extends State<ColorSucker> {
       decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            const BoxShadow(
+          boxShadow: const [
+            BoxShadow(
                 color: Colors.black26, blurRadius: 6, offset: Offset(2, 2))
           ]),
       margin: const EdgeInsets.only(left: 16, right: 16),
@@ -167,8 +161,8 @@ class _ColorSuckerState extends State<ColorSucker> {
                 shape: BoxShape.circle,
                 color: _currentColor,
                 border: Border.all(width: 2.0, color: Colors.white),
-                boxShadow: [
-                  const BoxShadow(
+                boxShadow: const [
+                  BoxShadow(
                       color: Colors.black12,
                       blurRadius: 4,
                       offset: Offset(2, 2))
@@ -208,6 +202,11 @@ class _ColorSuckerState extends State<ColorSucker> {
                 filter: ui.ImageFilter.matrix(_matrix.storage,
                     filterQuality: FilterQuality.none),
                 child: Container(
+                  height: _magnifierSize.height,
+                  width: _magnifierSize.width,
+                  decoration: BoxDecoration(
+                      borderRadius: _radius,
+                      border: Border.all(color: Colors.grey, width: 3)),
                   child: Center(
                     child: Container(
                       height: 1,
@@ -216,11 +215,6 @@ class _ColorSuckerState extends State<ColorSucker> {
                           color: Colors.grey, shape: BoxShape.circle),
                     ),
                   ),
-                  height: _magnifierSize.height,
-                  width: _magnifierSize.width,
-                  decoration: BoxDecoration(
-                      borderRadius: _radius,
-                      border: Border.all(color: Colors.grey, width: 3)),
                 ),
               ),
             ),

@@ -1,10 +1,4 @@
-import 'dart:async';
-import 'dart:ui' as ui;
-
-import 'package:flutter/foundation.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter_ume_kit_channel_monitor/src/core/channel_controller.dart';
-
+part of '../../flutter_ume_kit_channel_monitor_plus.dart';
 // 在 _DefaultBinaryMessenger 的基础上增加数据监控
 class UmeBinaryMessenger extends BinaryMessenger {
   static UmeBinaryMessenger binaryMessenger = UmeBinaryMessenger._();

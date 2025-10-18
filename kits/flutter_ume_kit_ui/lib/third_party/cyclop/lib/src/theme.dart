@@ -17,8 +17,9 @@ const defaultBorderRadius = BorderRadius.all(Radius.circular(defaultRadius));
 
 final lightTheme = ThemeData.light().copyWith(
   scaffoldBackgroundColor: const Color(0xfff0f0f0),
-  backgroundColor: const Color(0xffdadada),
-  toggleableActiveColor: Colors.cyan,
+  colorScheme: ThemeData.light().colorScheme.copyWith(
+    surface: const Color(0xffdadada),
+  ),
   inputDecorationTheme: ThemeData.light().inputDecorationTheme.copyWith(
         isDense: true,
         fillColor: Colors.white,
@@ -36,8 +37,9 @@ final lightTheme = ThemeData.light().copyWith(
 );
 
 final darkTheme = ThemeData.dark().copyWith(
-  backgroundColor: Colors.grey.shade700,
-  toggleableActiveColor: Colors.cyan,
+  colorScheme: ThemeData.dark().colorScheme.copyWith(
+    surface: Colors.grey.shade700
+  ),
   textSelectionTheme: ThemeData.light()
       .textSelectionTheme
       .copyWith(selectionColor: Colors.cyan.shade700),
@@ -50,25 +52,25 @@ final darkTheme = ThemeData.dark().copyWith(
 );
 
 final _lightTextButtonStyle = ButtonStyle(
-  shape: MaterialStateProperty.all(
+  shape: WidgetStateProperty.all(
     const RoundedRectangleBorder(borderRadius: defaultBorderRadius),
   ),
-  padding: MaterialStateProperty.all(
+  padding: WidgetStateProperty.all(
     const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
   ),
-  foregroundColor: MaterialStateProperty.all(Colors.grey.shade700),
-  overlayColor: MaterialStateProperty.all(Colors.white30),
+  foregroundColor: WidgetStateProperty.all(Colors.grey.shade700),
+  overlayColor: WidgetStateProperty.all(Colors.white30),
 );
 
 final _darkTextButtonStyle = ButtonStyle(
-  shape: MaterialStateProperty.all(
+  shape: WidgetStateProperty.all(
     const RoundedRectangleBorder(borderRadius: defaultBorderRadius),
   ),
-  padding: MaterialStateProperty.all(
+  padding: WidgetStateProperty.all(
     const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
   ),
-  foregroundColor: MaterialStateProperty.all(Colors.white70),
-  overlayColor: MaterialStateProperty.all(Colors.black12),
+  foregroundColor: WidgetStateProperty.all(Colors.white70),
+  overlayColor: WidgetStateProperty.all(Colors.black12),
 );
 
 const defaultDivider = Divider(

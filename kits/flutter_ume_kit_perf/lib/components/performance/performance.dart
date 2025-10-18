@@ -1,7 +1,4 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_ume/flutter_ume.dart';
-import 'icon.dart' as icon;
-
+part of flutter_ume_kit_perf_plus;
 class Performance extends StatelessWidget implements Pluggable {
   @override
   Widget build(BuildContext context) {
@@ -17,7 +14,7 @@ class Performance extends StatelessWidget implements Pluggable {
   Widget buildWidget(BuildContext? context) => this;
 
   @override
-  ImageProvider<Object> get iconImageProvider => MemoryImage(icon.iconBytes);
+  ImageProvider<Object> get iconImageProvider => MemoryImage(iconBytes);
 
   @override
   String get name => 'PerfOverlay';

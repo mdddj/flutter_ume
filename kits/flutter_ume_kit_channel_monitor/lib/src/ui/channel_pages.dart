@@ -1,11 +1,6 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_ume_kit_channel_monitor/src/core/channel_info_model.dart';
-import 'package:flutter_ume_kit_channel_monitor/src/core/channel_store.dart';
-import 'package:flutter_ume_kit_channel_monitor/src/ui/template_ui.dart';
-import 'package:rxdart/rxdart.dart';
-
+part of '../../flutter_ume_kit_channel_monitor_plus.dart';
 class ChannelPages extends StatefulWidget {
-  const ChannelPages({Key? key}) : super(key: key);
+  const ChannelPages({super.key});
 
   @override
   State<ChannelPages> createState() => _ChannelPagesState();
@@ -88,11 +83,11 @@ class SingleChannelPage extends StatefulWidget {
   final OnChannelModelSelected onTap;
 
   const SingleChannelPage({
-    Key? key,
+    super.key,
     required this.title,
     required this.onBackPressed,
     required this.onTap,
-  }) : super(key: key);
+  });
 
   @override
   State<SingleChannelPage> createState() => _SingleChannelPageState();
@@ -138,8 +133,7 @@ class ChannelInfoPage extends StatelessWidget {
   final ChannelInfoModel? channelInfoModel;
   final VoidCallback onBackPressed;
   const ChannelInfoPage(
-      {Key? key, this.channelInfoModel, required this.onBackPressed})
-      : super(key: key);
+      {super.key, this.channelInfoModel, required this.onBackPressed});
 
   @override
   Widget build(BuildContext context) {

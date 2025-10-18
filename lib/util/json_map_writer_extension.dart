@@ -1,5 +1,4 @@
-import 'dart:core';
-
+part of '../flutter_ume_plus.dart';
 extension JsonMapPathWriter on Map {
   Map write(String path, dynamic value) {
     dynamic obj = this;

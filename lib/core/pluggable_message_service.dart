@@ -1,6 +1,4 @@
-import 'dart:async';
-import 'package:flutter_ume/core/plugin_manager.dart';
-import 'package:flutter_ume/core/pluggable.dart';
+part of '../flutter_ume_plus.dart';
 
 class PluggableMessageService {
   static final PluggableMessageService _instance =
@@ -17,7 +15,7 @@ class PluggableMessageService {
       _pluggableMessageData;
   Map<String, PluggableMessageInfo> _pluggableMessageData = Map();
   PluggableMessageService._internal() {
-    _pluggableMessageData = Map();
+    _pluggableMessageData = <String, PluggableMessageInfo>{};
   }
 
   void resetListener() {
@@ -58,9 +56,9 @@ class PluggableMessageService {
   }
 
   void clearListener() {
-    _pluggableMessageData.values.forEach((messageInfo) {
+    for (var messageInfo in _pluggableMessageData.values) {
       messageInfo.subscription?.cancel();
-    });
+    }
     _pluggableMessageData.clear();
   }
 

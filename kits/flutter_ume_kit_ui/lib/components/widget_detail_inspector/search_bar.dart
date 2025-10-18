@@ -1,11 +1,8 @@
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter_ume_kit_ui/util/binding_ambiguate.dart';
-import 'icon.dart' as icon;
+part of '../../flutter_ume_kit_ui_plus.dart';
 
-typedef void OnSubmitHandle(String text);
-typedef void OnChangeHandle(String text);
-typedef void OnFocusChangeHandle(bool focus);
+typedef OnSubmitHandle = void Function(String text);
+typedef OnChangeHandle = void Function(String text);
+typedef OnFocusChangeHandle = void Function(bool focus);
 
 enum BarStyle {
   solid,
@@ -52,8 +49,8 @@ class SearchBar extends StatefulWidget {
 
 class _SearchInputState extends State<SearchBar> {
   bool _showClearIcon = false;
-  TextEditingController _inputController = TextEditingController();
-  FocusNode _focusNode = FocusNode();
+  final TextEditingController _inputController = TextEditingController();
+  final FocusNode _focusNode = FocusNode();
 
   @override
   void initState() {
@@ -103,7 +100,7 @@ class _SearchInputState extends State<SearchBar> {
     return Container(
         margin: const EdgeInsets.only(right: 11.0),
         child: Image.memory(
-          icon.iconBytes,
+          iconBytesWithDetailInspector,
           width: 16,
           height: 16,
         ));
@@ -111,7 +108,7 @@ class _SearchInputState extends State<SearchBar> {
 
   Widget _buildClearIcon() {
     if (!_showClearIcon) {
-      return Container(width: 0, height: 0);
+      return const SizedBox(width: 0, height: 0);
     }
     return GestureDetector(
       onTap: () {
@@ -122,8 +119,8 @@ class _SearchInputState extends State<SearchBar> {
         _inputChangeHandle('');
       },
       child: Container(
-          margin: EdgeInsets.only(left: 16.0),
-          child: Image.memory(icon.iconBytes, width: 16, height: 16)),
+          margin: const EdgeInsets.only(left: 16.0),
+          child: Image.memory(iconBytesWithDetailInspector, width: 16, height: 16)),
     );
   }
 
@@ -148,7 +145,7 @@ class _SearchInputState extends State<SearchBar> {
         maxLines: 1,
         onSubmitted: _inputSubmitHandle,
         maxLengthEnforcement: MaxLengthEnforcement.none,
-        style: TextStyle(
+        style: const TextStyle(
           fontSize: 15.0,
           color: Colors.black,
           textBaseline: TextBaseline.alphabetic,
@@ -213,7 +210,7 @@ class _SearchInputState extends State<SearchBar> {
         right = Padding(
             padding: const EdgeInsets.only(left: 20.0, right: 20),
             child: Text(widget.cancelText!,
-                style: TextStyle(
+                style: const TextStyle(
                     fontSize: 15.0,
                     fontWeight: FontWeight.bold,
                     color: Colors.black)));
@@ -231,16 +228,15 @@ class _SearchInputState extends State<SearchBar> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-        child: Flex(
+    return Flex(
       direction: Axis.horizontal,
       children: <Widget>[
-        Expanded(
-          flex: 1,
-          child: _buildInput(),
-        ),
-        Expanded(flex: 0, child: _buildClickButton())
+    Expanded(
+      flex: 1,
+      child: _buildInput(),
+    ),
+    Expanded(flex: 0, child: _buildClickButton())
       ],
-    ));
+    );
   }
 }

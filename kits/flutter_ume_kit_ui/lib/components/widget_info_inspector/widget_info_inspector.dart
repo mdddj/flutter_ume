@@ -1,13 +1,7 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_ume/flutter_ume.dart';
-import 'package:flutter_ume_kit_ui/components/hit_test.dart';
-import 'package:flutter_ume_kit_ui/util/binding_ambiguate.dart';
-import 'icon.dart' as icon;
-import 'package:flutter/rendering.dart';
-import 'package:flutter_ume/util/constants.dart';
+part of '../../flutter_ume_kit_ui_plus.dart';
 
 class WidgetInfoInspector extends StatefulWidget implements Pluggable {
-  const WidgetInfoInspector({Key? key}) : super(key: key);
+  const WidgetInfoInspector({super.key});
 
   @override
   _WidgetInfoInspectorState createState() => _WidgetInfoInspectorState();
@@ -25,7 +19,7 @@ class WidgetInfoInspector extends StatefulWidget implements Pluggable {
   void onTrigger() {}
 
   @override
-  ImageProvider<Object> get iconImageProvider => MemoryImage(icon.iconBytes);
+  ImageProvider<Object> get iconImageProvider => MemoryImage(iconBytesWithInfoInspector);
 }
 
 class _WidgetInfoInspectorState extends State<WidgetInfoInspector>
@@ -58,9 +52,7 @@ class _WidgetInfoInspectorState extends State<WidgetInfoInspector>
         (Offset.zero & (window.physicalSize / window.devicePixelRatio))
             .deflate(1.0);
     if (!bounds.contains(_lastPointerLocation!)) {
-      setState(() {
-        selection.clear();
-      });
+      setState(selection.clear);
     }
   }
 
@@ -76,7 +68,7 @@ class _WidgetInfoInspectorState extends State<WidgetInfoInspector>
     selection.clear();
     bindingAmbiguate(WidgetsBinding.instance)
         ?.addPostFrameCallback((timeStamp) {
-      _overlayEntry = OverlayEntry(builder: (_) => _DebugPaintButton());
+      _overlayEntry = OverlayEntry(builder: (_) => const _DebugPaintButton());
       overlayKey.currentState?.insert(_overlayEntry);
     });
   }
@@ -90,13 +82,13 @@ class _WidgetInfoInspectorState extends State<WidgetInfoInspector>
       onPanEnd: _handlePanEnd,
       behavior: HitTestBehavior.opaque,
       child: IgnorePointer(
-          child: Container(
+          child: SizedBox(
               width: MediaQuery.of(context).size.width,
               height: MediaQuery.of(context).size.height)),
     );
     children.add(gesture);
     children.add(InspectorOverlay(selection: selection));
-    return Stack(children: children, textDirection: TextDirection.ltr);
+    return Stack(textDirection: TextDirection.ltr, children: children);
   }
 
   @override
@@ -109,7 +101,7 @@ class _WidgetInfoInspectorState extends State<WidgetInfoInspector>
 }
 
 class _DebugPaintButton extends StatefulWidget {
-  const _DebugPaintButton({Key? key}) : super(key: key);
+  const _DebugPaintButton();
 
   @override
   State<StatefulWidget> createState() => _DebugPaintButtonState();
@@ -124,15 +116,15 @@ class _DebugPaintButtonState extends State<_DebugPaintButton> {
     return Positioned(
       left: _dx,
       top: _dy,
-      child: Container(
+      child: SizedBox(
         width: dotSize.width,
         height: dotSize.width,
         child: GestureDetector(
             onPanUpdate: _buttonPanUpdate,
             child: FloatingActionButton(
               elevation: 10,
-              child: new Icon(Icons.all_out_sharp),
               onPressed: _showAllSize,
+              child: const Icon(Icons.all_out_sharp),
             )),
       ),
     );

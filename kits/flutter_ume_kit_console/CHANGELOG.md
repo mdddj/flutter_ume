@@ -1,3 +1,45 @@
+
+## 4.2.2
+
+- 依赖升级
+
+## 4.1.0
+
+- 依赖升级
+
+# 2.0.5
+
+* 升级share_plus版本
+
+# 2.0.4
+
+* share->share_plus
+
+# 2.0.3
+
+* 修复部分场景下页面全红bug
+
+# 2.0.2
+
+* 添加`builder`属性,用来自定义构建日志widegt
+
+
+# 2.0.1
+
+* 支持指定文本样式
+```dart
+Console({
+  Key? key,
+  this.fontSize, // 字体大小
+  this.timeTextStyle, //时间
+  this.bodyTextStyle //文本内容
+})
+```
+
+# 2.0.0
+
+* 更新依赖 flutter_ume_plus
+
 # Changelog
 
 ## 1.0.0

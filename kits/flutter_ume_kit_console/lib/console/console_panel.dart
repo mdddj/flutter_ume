@@ -1,17 +1,19 @@
-import 'dart:async';
+part of '../flutter_ume_kit_console_plus.dart';
 
-import 'package:flutter/material.dart';
-import 'package:share/share.dart';
-import 'package:tuple/tuple.dart';
-import 'package:flutter_ume/flutter_ume.dart';
-import 'package:flutter_ume_kit_console/console/console_manager.dart';
-import 'package:flutter_ume_kit_console/console/icon.dart' as icon;
-import 'package:flutter_ume/util/floating_widget.dart';
-import 'package:flutter_ume/util/store_mixin.dart';
-import 'package:flutter_ume_kit_console/console/show_date_time_style.dart';
+typedef ConsoleMessageCustomBuilder = Widget Function(
+    String time, String log, int index, List<Tuple2<DateTime, String>> logs);
 
 class Console extends StatefulWidget implements PluggableWithStream {
-  Console({Key? key}) {
+  final double? fontSize;
+  final TextStyle? timeTextStyle;
+  final TextStyle? bodyTextStyle;
+  final ConsoleMessageCustomBuilder? builder;
+  Console(
+      {super.key,
+      this.fontSize,
+      this.timeTextStyle,
+      this.bodyTextStyle,
+      this.builder}) {
     ConsoleManager.redirectDebugPrint();
   }
 
@@ -22,7 +24,7 @@ class Console extends StatefulWidget implements PluggableWithStream {
   Widget buildWidget(BuildContext? context) => this;
 
   @override
-  ImageProvider<Object> get iconImageProvider => MemoryImage(icon.iconBytes);
+  ImageProvider<Object> get iconImageProvider => MemoryImage(iconBytes);
 
   @override
   String get name => 'Console';
@@ -34,7 +36,7 @@ class Console extends StatefulWidget implements PluggableWithStream {
   void onTrigger() {}
 
   @override
-  Stream get stream => ConsoleManager.streamController!.stream;
+  Stream get stream => ConsoleManager.streamController.stream;
 
   @override
   StreamFilter get streamFilter => (e) => true;
@@ -75,7 +77,7 @@ class ConsoleState extends State<Console>
     });
     _controller = ScrollController();
     _logList = ConsoleManager.logData.toList();
-    _subscription = ConsoleManager.streamController!.stream.listen((onData) {
+    _subscription = ConsoleManager.streamController.stream.listen((onData) {
       if (mounted) {
         if (_filterExp != null) {
           _logList = ConsoleManager.logData.where((e) {
@@ -104,17 +106,23 @@ class ConsoleState extends State<Console>
     }
   }
 
+  double get _fontSize => widget.fontSize ?? 16;
+
   String _dateTimeString(int logIndex) {
     String result = '';
     switch (_showDateTimeStyle) {
       case ShowDateTimeStyle.datetime:
-        result =
-            '${_logList[_logList.length - logIndex - 1].item1.toString().padRight(26, '0')}';
+        result = _logList[_logList.length - logIndex - 1]
+            .item1
+            .toString()
+            .padRight(26, '0');
         break;
       case ShowDateTimeStyle.time:
-        result =
-            '${_logList[_logList.length - logIndex - 1].item1.toString().padRight(26, '0')}'
-                .substring(11);
+        result = _logList[_logList.length - logIndex - 1]
+            .item1
+            .toString()
+            .padRight(26, '0')
+            .substring(11);
         break;
       case ShowDateTimeStyle.timestamp:
         result =
@@ -139,28 +147,35 @@ class ConsoleState extends State<Console>
               controller: _controller,
               itemCount: _logList.length,
               itemBuilder: (BuildContext context, int index) {
+                final dateString = _dateTimeString(index);
+                final message = _logList[_logList.length - index - 1].item2;
+                if (widget.builder != null) {
+                  return widget.builder!
+                      .call(dateString, message, index, _logList);
+                }
                 return Padding(
                   padding: const EdgeInsets.only(
                       left: 8, right: 8, top: 3, bottom: 3),
                   child: RichText(
                     text: TextSpan(children: [
                       TextSpan(
-                          text: _dateTimeString(index),
-                          style: TextStyle(
-                            color: Colors.white60,
-                            fontFamily: 'Courier',
-                            fontSize: 16,
-                            fontWeight: FontWeight.w400,
-                          )),
+                          text: dateString,
+                          style: widget.timeTextStyle ??
+                              TextStyle(
+                                color: Colors.white60,
+                                fontFamily: 'Courier',
+                                fontSize: _fontSize,
+                                fontWeight: FontWeight.w400,
+                              )),
                       TextSpan(
-                          text:
-                              '${_logList[_logList.length - index - 1].item2}',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontFamily: 'Courier',
-                            fontSize: 16,
-                            fontWeight: FontWeight.w400,
-                          )),
+                          text: message,
+                          style: widget.bodyTextStyle ??
+                              TextStyle(
+                                color: Colors.white,
+                                fontFamily: 'Courier',
+                                fontSize: _fontSize,
+                                fontWeight: FontWeight.w400,
+                              )),
                     ]),
                   ),
                 );
@@ -171,35 +186,33 @@ class ConsoleState extends State<Console>
                 left: 0,
                 right: 0,
                 top: 0,
-                child: Container(
-                  child: TextField(
-                    onChanged: (value) {
-                      if (value.isNotEmpty) {
-                        _filterExp = RegExp(value);
-                      } else {
-                        _filterExp = null;
-                      }
-                      setState(() {});
-                      _refreshConsole();
-                    },
-                    style: TextStyle(
-                      fontSize: 16,
-                    ),
-                    decoration: InputDecoration(
-                      fillColor: Colors.white,
-                      filled: true,
-                      hintText: 'RegExp',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.all(
-                          Radius.circular(50),
-                        ),
+                child: TextField(
+                  onChanged: (value) {
+                    if (value.isNotEmpty) {
+                      _filterExp = RegExp(value);
+                    } else {
+                      _filterExp = null;
+                    }
+                    setState(() {});
+                    _refreshConsole();
+                  },
+                  style: const TextStyle(
+                    fontSize: 16,
+                  ),
+                  decoration: const InputDecoration(
+                    fillColor: Colors.white,
+                    filled: true,
+                    hintText: 'RegExp',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.all(
+                        Radius.circular(50),
                       ),
-                      contentPadding: EdgeInsets.only(
-                        top: 0,
-                        bottom: 0,
-                      ),
-                      prefixIcon: Icon(Icons.search),
                     ),
+                    contentPadding: EdgeInsets.only(
+                      top: 0,
+                      bottom: 0,
+                    ),
+                    prefixIcon: Icon(Icons.search),
                   ),
                 ),
               ),
@@ -207,28 +220,28 @@ class ConsoleState extends State<Console>
       toolbarActions: [
         Tuple3(
             'Style',
-            Icon(
+            const Icon(
               Icons.access_time,
               size: 20,
             ),
             _triggerShowDate),
-        Tuple3(
+        const Tuple3(
             'Clear',
             Icon(
               Icons.do_not_disturb,
               size: 20,
             ),
-            () => ConsoleManager.clearLog()),
+            ConsoleManager.clearLog),
         Tuple3(
             'Filter',
-            Icon(
+            const Icon(
               Icons.search,
               size: 20,
             ),
             _triggerFilter),
         Tuple3(
             'Share',
-            Icon(
+            const Icon(
               Icons.share,
               size: 20,
             ),
@@ -259,6 +272,6 @@ class ConsoleState extends State<Console>
       return;
     }
     final l = _logList.map((e) => '${e.item1.toString()} ${e.item2}').toList();
-    return Share.share("${l.join('\n')}");
+     Share.share(l.join('\n'));
   }
 }

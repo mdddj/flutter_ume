@@ -1,15 +1,7 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_ume/core/ui/icon_cache.dart';
-import 'package:flutter_ume/core/pluggable_message_service.dart';
-import 'package:flutter_ume/core/red_dot.dart';
-import 'package:flutter_ume/core/store_manager.dart';
-import 'package:flutter_ume/flutter_ume.dart';
-import 'dragable_widget.dart';
-import 'package:flutter_ume/core/ui/panel_action_define.dart';
+part of '../../flutter_ume_plus.dart';
 
 class MenuPage extends StatefulWidget {
-  MenuPage({Key? key, this.action, this.minimalAction, this.closeAction})
-      : super(key: key);
+  const MenuPage({super.key, this.action, this.minimalAction, this.closeAction});
 
   final MenuAction? action;
   final MinimalAction? minimalAction;
@@ -21,7 +13,7 @@ class MenuPage extends StatefulWidget {
 
 class _MenuPageState extends State<MenuPage>
     with SingleTickerProviderStateMixin {
-  PluginStoreManager _storeManager = PluginStoreManager();
+  final PluginStoreManager _storeManager = PluginStoreManager();
 
   List<Pluggable?> _dataList = [];
 
@@ -37,17 +29,17 @@ class _MenuPageState extends State<MenuPage>
     if (list == null || list.isEmpty) {
       dataList = PluginManager.instance.pluginsMap.values.toList();
     } else {
-      list.forEach((f) {
+      for (var f in list) {
         bool contain = PluginManager.instance.pluginsMap.containsKey(f);
         if (contain) {
           dataList.add(PluginManager.instance.pluginsMap[f]);
         }
-      });
-      PluginManager.instance.pluginsMap.keys.forEach((key) {
+      }
+      for (var key in PluginManager.instance.pluginsMap.keys) {
         if (!list.contains(key)) {
           dataList.add(PluginManager.instance.pluginsMap[key]);
         }
-      });
+      }
     }
     _saveData(dataList);
     setState(() {
@@ -60,7 +52,7 @@ class _MenuPageState extends State<MenuPage>
     if (l.isEmpty) {
       return;
     }
-    Future.delayed(Duration(milliseconds: 500), () {
+    Future.delayed(const Duration(milliseconds: 500), () {
       _storeManager.storePlugins(l as List<String>);
     });
   }
@@ -76,7 +68,7 @@ class _MenuPageState extends State<MenuPage>
           children: <Widget>[
             Container(
               color: Colors.white,
-              height: 100,
+              height: 105,
               width: MediaQuery.of(context).size.width,
               alignment: Alignment.bottomLeft,
               padding: const EdgeInsets.only(left: 16, right: 16),
@@ -112,12 +104,11 @@ class _MenuPageState extends State<MenuPage>
                           )),
                     ],
                   ),
-                  Container(
-                      child: Text('UME',
-                          style: const TextStyle(
-                              fontSize: 60,
-                              fontWeight: FontWeight.w800,
-                              color: Color(0xff454545)))),
+                  const Text('UME',
+                      style: TextStyle(
+                          fontSize: 55,
+                          fontWeight: FontWeight.w800,
+                          color: Color(0xff454545))),
                 ],
               ),
             ),
@@ -154,14 +145,14 @@ class _MenuPageState extends State<MenuPage>
 class _EmptyPlaceholder extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Center(
+    return const Center(
       child: Text('Empty'),
     );
   }
 }
 
 class _MenuCell extends StatelessWidget {
-  const _MenuCell({Key? key, this.pluginData}) : super(key: key);
+  const _MenuCell({this.pluginData});
 
   final Pluggable? pluginData;
 
@@ -171,65 +162,63 @@ class _MenuCell extends StatelessWidget {
     return LayoutBuilder(builder: (_, constraints) {
       return Material(
         color: Colors.white,
-        child: Container(
-          child: Stack(
-            alignment: Alignment.center,
-            children: <Widget>[
-              Positioned(
-                  left: 0,
-                  top: 0,
-                  child: Container(
-                      height: constraints.maxHeight,
-                      width: 0.5,
-                      color: lineColor)),
-              Positioned(
-                  left: 0,
-                  top: 0,
-                  child: Container(
-                      height: 0.5,
-                      width: constraints.maxWidth,
-                      color: lineColor)),
-              Positioned(
-                  top: 0,
-                  right: 0,
-                  child: Container(
-                      height: constraints.maxHeight,
-                      width: 0.5,
-                      color: lineColor)),
-              Positioned(
-                  bottom: 0,
-                  left: 0,
-                  child: Container(
-                      height: 0.5,
-                      width: constraints.maxWidth,
-                      color: lineColor)),
-              Container(
-                alignment: Alignment.center,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: <Widget>[
-                    Container(
-                        child: IconCache.icon(pluggableInfo: pluginData!),
-                        height: 40,
-                        width: 40),
-                    Container(
-                        margin: const EdgeInsets.only(top: 25),
-                        child: Text(pluginData!.displayName,
-                            style: const TextStyle(
-                                fontSize: 15, color: Colors.black)))
-                  ],
-                ),
+        child: Stack(
+          alignment: Alignment.center,
+          children: <Widget>[
+            Positioned(
+                left: 0,
+                top: 0,
+                child: Container(
+                    height: constraints.maxHeight,
+                    width: 0.5,
+                    color: lineColor)),
+            Positioned(
+                left: 0,
+                top: 0,
+                child: Container(
+                    height: 0.5,
+                    width: constraints.maxWidth,
+                    color: lineColor)),
+            Positioned(
+                top: 0,
+                right: 0,
+                child: Container(
+                    height: constraints.maxHeight,
+                    width: 0.5,
+                    color: lineColor)),
+            Positioned(
+                bottom: 0,
+                left: 0,
+                child: Container(
+                    height: 0.5,
+                    width: constraints.maxWidth,
+                    color: lineColor)),
+            Container(
+              alignment: Alignment.center,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  SizedBox(
+                      height: 40,
+                      width: 40,
+                      child: IconCache.icon(pluggableInfo: pluginData!)),
+                  Container(
+                      margin: const EdgeInsets.only(top: 25),
+                      child: Text(pluginData!.displayName,
+                          style: const TextStyle(
+                              fontSize: 15, color: Colors.black)))
+                ],
               ),
-              Positioned(
-                right: 12,
-                top: 12,
-                child: RedDot(
-                  pluginDatas: [pluginData],
-                  size: 22,
-                ),
+            ),
+            Positioned(
+              right: 12,
+              top: 12,
+              child: RedDot(
+                pluginDatas: [pluginData],
+                size: 22,
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       );
     });

@@ -1,8 +1,4 @@
-import 'dart:async';
-
-import 'package:flutter_ume_kit_channel_monitor/src/core/channel_info_model.dart';
-import 'package:rxdart/rxdart.dart';
-
+part of '../../flutter_ume_kit_channel_monitor_plus.dart';
 class _ChannelStore {
   final BehaviorSubject<List<String>> _orderedChannelNamePublisher =
       BehaviorSubject();

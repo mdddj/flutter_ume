@@ -1,5 +1,4 @@
-import 'package:flutter/widgets.dart';
-import 'package:tuple/tuple.dart';
+part of '../flutter_ume_plus.dart';
 
 abstract class Pluggable {
   String get name;

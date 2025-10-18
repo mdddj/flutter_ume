@@ -1,5 +1,4 @@
-import 'package:flutter/widgets.dart';
-
+part of '../../flutter_ume_plus.dart';
 final GlobalKey rootKey = GlobalKey();
 
 final GlobalKey<NavigatorState> navigatorKey =

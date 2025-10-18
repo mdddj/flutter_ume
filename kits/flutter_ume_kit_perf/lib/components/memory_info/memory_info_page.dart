@@ -1,7 +1,4 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_ume/flutter_ume.dart';
-import 'memory_service.dart';
-import 'icon.dart' as icon;
+part of flutter_ume_kit_perf_plus;
 
 class MemoryInfoPage extends StatelessWidget implements Pluggable {
   const MemoryInfoPage({Key? key}) : super(key: key);
@@ -18,7 +15,7 @@ class MemoryInfoPage extends StatelessWidget implements Pluggable {
   Widget buildWidget(BuildContext? context) => this;
 
   @override
-  ImageProvider<Object> get iconImageProvider => MemoryImage(icon.iconBytes);
+  ImageProvider<Object> get iconImageProvider => MemoryImage(iconBytes2);
 
   @override
   String get name => 'MemoryInfo';
@@ -46,7 +43,7 @@ class _MemoryWidget extends StatefulWidget {
 }
 
 class _MemoryWidgetState extends State<_MemoryWidget> {
-  MemoryService _memoryservice = MemoryService();
+  final MemoryService _memoryservice = MemoryService();
 
   int _sortColumnIndex = 0;
 
@@ -71,8 +68,8 @@ class _MemoryWidgetState extends State<_MemoryWidget> {
       return Scaffold(
           body: _MemoryDetail(detail: detail, service: _memoryservice),
           appBar: PreferredSize(
-              child: AppBar(elevation: 0.0, title: Text(detail.className!)),
-              preferredSize: Size.fromHeight(44)));
+              preferredSize: Size.fromHeight(44),
+              child: AppBar(elevation: 0.0, title: Text(detail.className!))));
     }));
   }
 
@@ -130,6 +127,7 @@ class _MemoryWidgetState extends State<_MemoryWidget> {
               return <Widget>[
                 SliverAppBar(
                   bottom: PreferredSize(
+                      preferredSize: Size.fromHeight(44),
                       child: _PerRow(customColor: Color(0xFFF4F4F4), widgets: [
                         _DropButton(
                             title: "Size",
@@ -155,8 +153,7 @@ class _MemoryWidgetState extends State<_MemoryWidget> {
                                 }),
                             showArrow: _sortColumnIndex == 1),
                         _DropButton(title: "ClassName")
-                      ]),
-                      preferredSize: Size.fromHeight(44)),
+                      ])),
                   expandedHeight: 310.0,
                   floating: true,
                   pinned: true,
@@ -182,7 +179,7 @@ class _MemoryWidgetState extends State<_MemoryWidget> {
                         darkColor: index % 2 == 0,
                         widgets: [
                           Text(
-                              "${_memoryservice.byteToString(stats.accumulatedSize!)}",
+                              _memoryservice.byteToString(stats.accumulatedSize!),
                               style: TextStyle(color: Colors.black87)),
                           Text("${stats.instancesAccumulated}",
                               style: TextStyle(color: Colors.black87)),
@@ -245,22 +242,20 @@ class __DropButtonState extends State<_DropButton> {
           }
         });
       },
-      child: Container(
-          child: Row(children: [
-        Text(widget.title,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-        widget.showArrow
-            ? Icon(_descending ? Icons.arrow_drop_down : Icons.arrow_drop_up)
-            : Container()
-      ], mainAxisSize: MainAxisSize.min)),
+      child: Row(mainAxisSize: MainAxisSize.min, children: [
+              Text(widget.title,
+        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+              widget.showArrow
+        ? Icon(_descending ? Icons.arrow_drop_down : Icons.arrow_drop_up)
+        : Container()
+            ]),
     );
   }
 }
 
 class _PerRow extends StatelessWidget {
   const _PerRow(
-      {Key? key, this.widgets, this.customColor, this.darkColor = false})
-      : super(key: key);
+      {this.widgets, this.customColor, this.darkColor = false});
 
   final List<Widget>? widgets;
   final bool darkColor;
@@ -270,19 +265,18 @@ class _PerRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.only(left: 15, right: 15),
-      color: this.customColor ??
-          (this.darkColor
+      color: customColor ??
+          (darkColor
               ? Colors.grey.withOpacity(0.2)
               : Colors.grey.withOpacity(0.03)),
       child: Row(
-          children: this
-              .widgets!
+          children: widgets!
               .map((e) => Expanded(
                   child: Align(
+                      alignment: Alignment.centerLeft,
                       child: Padding(
                           padding: const EdgeInsets.only(top: 10, bottom: 10),
-                          child: e),
-                      alignment: Alignment.centerLeft)))
+                          child: e))))
               .toList()),
     );
   }
@@ -290,9 +284,7 @@ class _PerRow extends StatelessWidget {
 
 class _MemoryDetail extends StatefulWidget {
   _MemoryDetail({Key? key, required this.detail, required this.service})
-      : assert(service != null),
-        assert(detail != null),
-        super(key: key);
+      : super(key: key);
 
   final _DetailModel detail;
 

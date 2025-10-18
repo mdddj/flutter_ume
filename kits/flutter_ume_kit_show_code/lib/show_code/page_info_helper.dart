@@ -1,8 +1,4 @@
-import 'dart:convert';
-import 'package:flutter/foundation.dart';
-import 'package:flutter/widgets.dart';
-import 'package:flutter_ume_kit_show_code/show_code/code_display_service.dart';
-import 'package:flutter_ume/flutter_ume.dart';
+part of flutter_ume_kit_perf_plus;
 
 class PageInfoHelper {
   PageInfoHelper() {
@@ -50,7 +46,7 @@ class PageInfoHelper {
 
   double _area(RenderObject object) {
     final Size size = object.paintBounds.size;
-    return size == null ? double.maxFinite : size.width * size.height;
+    return  size.width * size.height;
   }
 
   // Init selection of current page
@@ -63,8 +59,9 @@ class PageInfoHelper {
       final List<DiagnosticsNode> children = object.debugDescribeChildren();
       for (int i = 0; i < children.length; i++) {
         DiagnosticsNode c = children[i];
-        if (c.style == DiagnosticsTreeStyle.offstage || c.value is! RenderBox)
+        if (c.style == DiagnosticsTreeStyle.offstage || c.value is! RenderBox) {
           continue;
+        }
         RenderObject child = c.value as RenderObject;
         objectList.add(child);
         findAllRenderObject(child);
@@ -74,7 +71,7 @@ class PageInfoHelper {
     findAllRenderObject(userRender);
     objectList
         .sort((RenderObject a, RenderObject b) => _area(a).compareTo(_area(b)));
-    Set<RenderObject> objectSet = Set<RenderObject>();
+    Set<RenderObject> objectSet = <RenderObject>{};
     objectSet.addAll(objectList);
     objectList = objectSet.toList();
     selection.candidates = objectList;

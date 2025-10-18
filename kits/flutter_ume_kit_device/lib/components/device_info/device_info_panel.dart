@@ -1,9 +1,4 @@
-import 'package:device_info/device_info.dart';
-import 'package:flutter/material.dart';
-import 'package:platform/platform.dart';
-import 'package:flutter_ume/flutter_ume.dart';
-import 'icon.dart' as icon;
-
+part of flutter_ume_kit_device_plus;
 class DeviceInfoPanel extends StatefulWidget implements Pluggable {
   final Platform platform;
 
@@ -16,7 +11,7 @@ class DeviceInfoPanel extends StatefulWidget implements Pluggable {
   Widget buildWidget(BuildContext? context) => this;
 
   @override
-  ImageProvider<Object> get iconImageProvider => MemoryImage(icon.iconBytes);
+  ImageProvider<Object> get iconImageProvider => MemoryImage(iconBytes);
 
   @override
   String get name => 'DeviceInfo';
@@ -39,7 +34,7 @@ class _DeviceInfoPanelState extends State<DeviceInfoPanel> {
 
   void _getDeviceInfo() async {
     DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
-    Map dataMap = Map();
+    Map dataMap = {};
     if (widget.platform.isAndroid) {
       AndroidDeviceInfo androidDeviceInfo = await deviceInfo.androidInfo;
       dataMap = _readAndroidBuildData(androidDeviceInfo);
@@ -82,7 +77,7 @@ class _DeviceInfoPanelState extends State<DeviceInfoPanel> {
       'tags': build.tags,
       'type': build.type,
       'isPhysicalDevice': build.isPhysicalDevice,
-      'androidId': build.androidId
+      'androidId': 'unknown'
     };
   }
 
@@ -120,7 +115,7 @@ class _DeviceInfoPanelState extends State<DeviceInfoPanel> {
               padding: const EdgeInsets.only(bottom: 8),
               child: Text(
                 'Device Info',
-                textScaleFactor: 1.15,
+                textScaler: TextScaler.linear(1.15),
                 style: const TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.w600,

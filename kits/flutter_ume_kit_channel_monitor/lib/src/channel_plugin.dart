@@ -1,10 +1,4 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_ume/flutter_ume.dart';
-import 'package:flutter_ume_kit_channel_monitor/src/ui/channel_pages.dart';
-import 'dart:convert';
-import 'core/channel_binding.dart';
-import 'icon.dart' as icon;
-
+part of '../flutter_ume_kit_channel_monitor_plus.dart';
 class ChannelPlugin extends Pluggable {
   ChannelPlugin() {
     ChannelBinding.ensureInitialized();
@@ -20,7 +14,7 @@ class ChannelPlugin extends Pluggable {
 
   @override
   ImageProvider<Object> get iconImageProvider =>
-      MemoryImage(base64Decode(icon.iconData));
+      MemoryImage(base64Decode(iconData));
 
   @override
   String get name => 'Channel Monitor';

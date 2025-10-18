@@ -1,3 +1,4 @@
+part of flutter_ume;
 /// This allows a value of type T or T?
 /// to be treated as a value of type T?.
 ///
@@ -8,3 +9,5 @@
 // TODO remove this when we no longer support before Flutter 3.0.0 and replace with following:
 // SomeBinding.instance.someFunction(...);
 T? bindingAmbiguate<T>(T? value) => value;
+
+

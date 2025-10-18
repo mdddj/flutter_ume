@@ -6,8 +6,7 @@ part of 'config.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$DioConfigImpl _$$DioConfigImplFromJson(Map<String, dynamic> json) =>
-    _$DioConfigImpl(
+_DioConfig _$DioConfigFromJson(Map<String, dynamic> json) => _DioConfig(
       showCopyButton: json['showCopyButton'] as bool? ?? false,
       showFullUrl: json['showFullUrl'] as bool? ?? false,
       urlKey: json['urlKey'] as String? ?? 'url',
@@ -19,7 +18,7 @@ _$DioConfigImpl _$$DioConfigImplFromJson(Map<String, dynamic> json) =>
       timeKey: json['timeKey'] as String? ?? "请求时间",
     );
 
-Map<String, dynamic> _$$DioConfigImplToJson(_$DioConfigImpl instance) =>
+Map<String, dynamic> _$DioConfigToJson(_DioConfig instance) =>
     <String, dynamic>{
       'showCopyButton': instance.showCopyButton,
       'showFullUrl': instance.showFullUrl,

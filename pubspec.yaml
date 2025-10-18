@@ -1,11 +1,10 @@
-name: flutter_ume
+name: flutter_ume_plus
 description: UME is an in-app debug kits platform for Flutter apps. Produced by Flutter Infra team of ByteDance.
-version: 1.1.1+1
+version: 4.3.0
 homepage: https://github.com/bytedance/flutter_ume
 
 environment:
-  sdk: ">=2.12.0 <3.0.0"
-  flutter: ">=2.0.0"
+  sdk: ">=3.4.0 <4.0.0"
 
 dependencies:
   flutter:
@@ -13,18 +12,13 @@ dependencies:
   flutter_localizations:
     sdk: flutter
 
-  shared_preferences: ^2.0.15
-  vm_service: ^9.4.0
-  tuple: ^2.0.0
+  shared_preferences: ^2.5.3
+  vm_service: ^15.0.2
+  tuple: ^2.0.2
 
 dev_dependencies:
-  flutter_test:
-    sdk: flutter
-  mockito: ^5.3.2
-  flutter_coverage_badge:
-    git:
-      url: https://github.com/smileShirely/flutter_coverage_badge.git
-      ref: 59b7580f406bb712e9d9049c8c99212946e34f65
-  lints: ^2.0.0
+  mockito: ^5.5.1
+  lints: ^6.0.0
+  flutter_lints: ^6.0.0
 
-flutter:
+

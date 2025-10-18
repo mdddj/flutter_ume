@@ -1,20 +1,17 @@
-import 'dart:developer';
-import 'dart:isolate';
-import 'package:vm_service/utils.dart';
-import 'package:vm_service/vm_service.dart' as vm;
-import 'package:vm_service/vm_service_io.dart';
+part of '../../flutter_ume_plus.dart';
 
 class ServiceWrapper {
   vm.VmService? _service;
 
   String? _isolateId;
 
-  String? get isolateId {
+
+  String get isolateId {
     if (_isolateId != null) {
-      return _isolateId;
+      return _isolateId!;
     }
-    _isolateId = Service.getIsolateID(Isolate.current);
-    return _isolateId;
+    _isolateId = Service.getIsolateId(Isolate.current);
+    return _isolateId!;
   }
 
   Future<vm.VmService> getVMService() async {
@@ -36,22 +33,22 @@ class ServiceWrapper {
 
   Future<vm.MemoryUsage> getMemoryUsage() async {
     vm.VmService virtualMachine = await getVMService();
-    return virtualMachine.getMemoryUsage(isolateId!);
+    return virtualMachine.getMemoryUsage(isolateId);
   }
 
   Future<vm.ClassList> getClassList() async {
     vm.VmService virtualMachine = await getVMService();
-    return virtualMachine.getClassList(isolateId!);
+    return virtualMachine.getClassList(isolateId);
   }
 
   Future<vm.AllocationProfile> getAllocationProfile() async {
     vm.VmService virtualMachine = await getVMService();
-    return virtualMachine.getAllocationProfile(isolateId!, reset: true);
+    return virtualMachine.getAllocationProfile(isolateId, reset: true);
   }
 
   Future<vm.Isolate> getIsolate() async {
     vm.VmService virtualMachine = await getVMService();
-    return virtualMachine.getIsolate(isolateId!);
+    return virtualMachine.getIsolate(isolateId);
   }
 
   Future<List<vm.LibraryRef>?> getLibraries() async {
@@ -67,23 +64,23 @@ class ServiceWrapper {
 
   Future<vm.InstanceSet> getInstances(String objectId, int limit) async {
     vm.VmService virtualMachine = await getVMService();
-    return virtualMachine.getInstances(isolateId!, objectId, limit);
+    return virtualMachine.getInstances(isolateId, objectId, limit);
   }
 
   Future<vm.Stack> getStack() async {
     vm.VmService virtualMachine = await getVMService();
-    return virtualMachine.getStack(isolateId!);
+    return virtualMachine.getStack(isolateId);
   }
 
   Future<vm.Obj> getObject(String objectId, {int? offset, int? count}) async {
     vm.VmService virtualMachine = await getVMService();
-    return virtualMachine.getObject(isolateId!, objectId,
+    return virtualMachine.getObject(isolateId, objectId,
         offset: offset, count: count);
   }
 
   Future<vm.InboundReferences> getInboundReferences(String objectId) async {
     vm.VmService virtualMachine = await getVMService();
-    return virtualMachine.getInboundReferences(isolateId!, objectId, 100);
+    return virtualMachine.getInboundReferences(isolateId, objectId, 100);
   }
 
   Future<List<vm.ClassHeapStats>> getClassHeapStats() async {
@@ -97,11 +94,11 @@ class ServiceWrapper {
 
   Future<vm.ScriptList> getScripts() async {
     vm.VmService virtualMachine = await getVMService();
-    return virtualMachine.getScripts(isolateId!);
+    return virtualMachine.getScripts(isolateId);
   }
 
   Future<vm.Response> evaluate(String targetId, String expression) async {
     vm.VmService virtualMachine = await getVMService();
-    return virtualMachine.evaluate(isolateId!, targetId, expression);
+    return virtualMachine.evaluate(isolateId, targetId, expression);
   }
 }

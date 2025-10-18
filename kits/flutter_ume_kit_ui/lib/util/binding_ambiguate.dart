@@ -1,3 +1,4 @@
+part of flutter_ume_kit_ui_plus;
 /// This allows a value of type T or T?
 /// to be treated as a value of type T?.
 ///

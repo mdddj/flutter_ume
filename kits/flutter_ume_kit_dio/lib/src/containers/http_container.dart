@@ -1,11 +1,7 @@
-///
-/// [Author] Alex (https://github.com/AlexV525)
-/// [Date] 4/13/21 2:49 PM
-///
 import 'dart:math' as math;
 
-import 'package:flutter/widgets.dart';
 import 'package:dio/dio.dart' show Response;
+import 'package:flutter/widgets.dart';
 
 /// Implements a [ChangeNotifier] to notify listeners when new responses
 /// were recorded. Use [page] to support paging.

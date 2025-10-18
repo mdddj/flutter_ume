@@ -1,11 +1,7 @@
-import 'package:flutter/material.dart';
-import 'package:system_info/system_info.dart';
-import 'package:flutter_ume/flutter_ume.dart';
-import 'icon.dart' as icon;
-import 'package:platform/platform.dart';
+part of '../../flutter_ume_kit_device_plus.dart';
 
 class CpuInfoPage extends StatefulWidget implements Pluggable {
-  CpuInfoPage({Key? key, this.child, this.platform = const LocalPlatform()})
+  const CpuInfoPage({Key? key, this.child, this.platform = const LocalPlatform()})
       : super(key: key);
 
   final Platform platform;
@@ -28,7 +24,7 @@ class CpuInfoPage extends StatefulWidget implements Pluggable {
   void onTrigger() {}
 
   @override
-  ImageProvider<Object> get iconImageProvider => MemoryImage(icon.iconBytes);
+  ImageProvider<Object> get iconImageProvider => MemoryImage(iconBytes_cpu);
 }
 
 class _CpuInfoPageState extends State<CpuInfoPage> {
@@ -36,13 +32,14 @@ class _CpuInfoPageState extends State<CpuInfoPage> {
 
   @override
   Widget build(BuildContext context) {
-    if (!widget.platform.isAndroid)
+    if (!widget.platform.isAndroid) {
       return Container(
         color: Colors.white,
         child: Center(
           child: Text('Only available on Android device'),
         ),
       );
+    }
     return Container(
       color: Colors.white,
       child: SafeArea(
@@ -99,7 +96,7 @@ class _CpuInfoPageState extends State<CpuInfoPage> {
       },
     ]);
 
-    final processors = SysInfo.processors;
+    final processors = SysInfo.cores;
     deviceInfo.add(
       {'Number of processors': '${processors.length}'},
     );
@@ -109,9 +106,9 @@ class _CpuInfoPageState extends State<CpuInfoPage> {
           '[${processors.indexOf(processor)}] Architecture':
               '${processor.architecture}'
         },
-        {'[${processors.indexOf(processor)}] Name': '${processor.name}'},
+        {'[${processors.indexOf(processor)}] Name': processor.name},
         {'[${processors.indexOf(processor)}] Socket': '${processor.socket}'},
-        {'[${processors.indexOf(processor)}] Vendor': '${processor.vendor}'},
+        {'[${processors.indexOf(processor)}] Vendor': processor.vendor},
       ]);
     }
     Future.delayed(Duration(seconds: 1), () {

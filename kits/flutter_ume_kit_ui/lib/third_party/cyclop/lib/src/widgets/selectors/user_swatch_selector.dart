@@ -15,8 +15,8 @@ class SwatchLibrary extends StatefulWidget {
     required this.onColorSelected,
     this.onSwatchesUpdate,
     this.colors = const {},
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   bool get canAdd => !colors.contains(currentColor);
 
@@ -96,7 +96,7 @@ class _SwatchLibraryState extends State<SwatchLibrary> {
       child: Center(
         child: IconButton(
           color:
-              widget.canAdd ? theme.toggleableActiveColor : theme.disabledColor,
+              widget.canAdd ? theme.colorScheme.secondary : theme.disabledColor,
           icon: const Icon(Icons.add),
           onPressed: widget.canAdd && widget.onSwatchesUpdate != null
               ? () {

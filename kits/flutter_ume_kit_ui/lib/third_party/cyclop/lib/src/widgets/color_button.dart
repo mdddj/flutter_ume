@@ -1,12 +1,9 @@
 import 'dart:math';
 import 'dart:ui';
 
-import 'package:flutter/foundation.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
+import 'package:flutter_ume_plus/flutter_ume_plus.dart';
 
-import 'package:flutter_ume_kit_ui/util/binding_ambiguate.dart';
 import '../theme.dart';
 import '../utils.dart';
 import 'color_picker.dart';
@@ -42,8 +39,8 @@ class ColorButton extends StatefulWidget {
     this.size = _buttonSize,
     this.boxShape = BoxShape.circle,
     this.swatches = const {},
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   _ColorButtonState createState() => _ColorButtonState();
@@ -112,7 +109,7 @@ class _ColorButtonState extends State<ColorButton> with WidgetsBindingObserver {
 
     pickerOverlay = _buildPickerOverlay(offset, rootContext);
 
-    Overlay.of(rootContext)?.insert(pickerOverlay!);
+    Overlay.of(rootContext).insert(pickerOverlay!);
 
     return Future.value(widget.color);
   }
@@ -217,12 +214,11 @@ class _DraggablePicker extends StatefulWidget {
   final bool keyboardOn;
 
   const _DraggablePicker({
-    Key? key,
     required this.child,
     required this.initialOffset,
     required this.bottom,
     required this.keyboardOn,
-  }) : super(key: key);
+  });
 
   @override
   State<_DraggablePicker> createState() => _DraggablePickerState();
