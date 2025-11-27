@@ -13,7 +13,7 @@ class SettingWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if(!show){
+    if (!show) {
       return const SizedBox.shrink();
     }
     return AnimatedContainer(
@@ -25,52 +25,67 @@ class SettingWidget extends StatelessWidget {
         color: Theme.of(context).colorScheme.surfaceVariant,
         child: Padding(
           padding: const EdgeInsets.all(8.0),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              Expanded(
-                child: SingleChildScrollView(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text('设置'),
-                      Row(
-                        children: [
-                          Switch(
-                            value: config.showFullUrl,
-                            onChanged: (value) {
-                              changeSetting((oldConfig) =>
-                                  oldConfig.copyWith(showFullUrl: value));
-                            },
-                          ),
-                          const Text('显示完整url')
-                        ],
-                      ),
-                      Row(
-                        children: [
-                          Switch(
-                            value: config.showCopyButton,
-                            onChanged: (value) {
-                              changeSetting((oldConfig) =>
-                                  oldConfig.copyWith(showCopyButton: value));
-                            },
-                          ),
-                          const Text('显示复制功能')
-                        ],
-                      )
-                    ],
-                  ),
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                const Text('设置'),
+                Row(
+                  children: [
+                    Switch(
+                      value: config.showFullUrl,
+                      onChanged: (value) {
+                        changeSetting((oldConfig) =>
+                            oldConfig.copyWith(showFullUrl: value));
+                      },
+                    ),
+                    const Text('显示完整url')
+                  ],
                 ),
-              ),
-              SizedBox(
-                width: MediaQuery.of(context).size.width * 0.5,
-                child: _ChangeKeys(
+                Row(
+                  children: [
+                    Switch(
+                      value: config.showCopyButton,
+                      onChanged: (value) {
+                        changeSetting((oldConfig) =>
+                            oldConfig.copyWith(showCopyButton: value));
+                      },
+                    ),
+                    const Text('显示复制功能')
+                  ],
+                ),
+                Row(
+                  children: [
+                    Switch(
+                      value: config.showRequestHeaders,
+                      onChanged: (value) {
+                        changeSetting((oldConfig) =>
+                            oldConfig.copyWith(showRequestHeaders: value));
+                      },
+                    ),
+                    const Text('显示 Request Headers')
+                  ],
+                ),
+                Row(
+                  children: [
+                    Switch(
+                      value: config.showResponseHeaders,
+                      onChanged: (value) {
+                        changeSetting((oldConfig) =>
+                            oldConfig.copyWith(showResponseHeaders: value));
+                      },
+                    ),
+                    const Text('显示 Respose Headers')
+                  ],
+                ),
+                Divider(),
+                _ChangeKeys(
                   config: config,
                   onChanged: onChanged,
-                ),
-              )
-            ],
+                )
+              ],
+            ),
           ),
         ),
       ),

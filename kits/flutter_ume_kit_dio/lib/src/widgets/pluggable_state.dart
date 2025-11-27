@@ -2,10 +2,10 @@ import 'dart:convert';
 
 import 'package:dio/dio.dart';
 import 'package:flex_color_scheme/flex_color_scheme.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_ume_plus/flutter_ume_plus.dart';
+import 'package:syntax_highlight/syntax_highlight.dart';
 
 import '../../flutter_ume_kit_dio_plus.dart';
 import '../constants/extensions.dart';
@@ -13,6 +13,40 @@ import '../instances.dart';
 import '../models/config.dart';
 
 const JsonEncoder _encoder = JsonEncoder.withIndent('  ');
+
+/// JSON 高亮工具类
+class JsonHighlighter {
+  static Highlighter? _highlighter;
+  static bool _initialized = false;
+  static bool _initializing = false;
+
+  static Future<void> initialize() async {
+    if (_initialized || _initializing) return;
+    _initializing = true;
+    try {
+      await Highlighter.initialize(['json']);
+      final theme = await HighlighterTheme.loadLightTheme();
+      _highlighter = Highlighter(language: 'json', theme: theme);
+      _initialized = true;
+      debugPrint("高亮初始化完成");
+    } catch (e) {
+      // 初始化失败时使用普通文本
+      debugPrint("代码高亮初始化失败:${e}");
+    }
+    _initializing = false;
+  }
+
+  static TextSpan? highlight(String code) {
+    if (_highlighter == null) return null;
+    try {
+      return _highlighter!.highlight(code);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  static bool get isReady => _initialized && _highlighter != null;
+}
 
 ButtonStyle _buttonStyle(
   BuildContext context, {
@@ -44,15 +78,17 @@ class DioPluggableState extends State<DioInspector> with StoreMixin {
 
   bool _showSetting = false; //显示设置
 
+  final GlobalKey<AnimatedListState> _listKey = GlobalKey<AnimatedListState>();
+
   @override
   void initState() {
     super.initState();
-    InspectorInstance.httpContainer.addListener(_listener);
-    Future.microtask(() {
-      DioConfigUtil.instance.getConfig().then((value) {
-        setState(() {
-          _config = value;
-        });
+    InspectorInstance.httpContainer.addListener(_onResponseAdded);
+    Future.microtask(() async {
+      await JsonHighlighter.initialize();
+      final value = await DioConfigUtil.instance.getConfig();
+      setState(() {
+        _config = value;
       });
     });
   }
@@ -61,32 +97,54 @@ class DioPluggableState extends State<DioInspector> with StoreMixin {
   void dispose() {
     scrollController.dispose();
     InspectorInstance.httpContainer
-      ..removeListener(_listener) // First, remove refresh listener.
-      ..resetPaging(); // Then reset the paging field.
+      ..removeListener(_onResponseAdded)
+      ..resetPaging();
     super.dispose();
   }
 
-  /// Using [setState] won't cause too much performance regression,
-  /// since we've implemented the list with `findChildIndexCallback`.
-  void _listener() {
-    Future.microtask(() {
-      if (mounted &&
-          !context.debugDoingBuild &&
-          context.owner?.debugBuilding != true) {
-        setState(() {});
-      }
+  void _onResponseAdded() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _listKey.currentState
+          ?.insertItem(0, duration: const Duration(milliseconds: 300));
     });
   }
 
   Widget _clearAllButton(BuildContext context) {
     return FilledButton.icon(
-        onPressed: InspectorInstance.httpContainer.clearRequests,
-        icon: const Icon(
-          Icons.cleaning_services,
-          size: 12,
-        ),
-        style: _buttonStyle(context, padding: const EdgeInsets.all(2)),
-        label: const Text('清理'));
+      onPressed: () {
+        final httpContainer = InspectorInstance.httpContainer;
+        httpContainer.removeListener(_onResponseAdded);
+
+        final List<Response<dynamic>> requests = httpContainer.pagedRequests;
+        final int initialLength = requests.length;
+
+        for (int i = 0; i < initialLength; i++) {
+          final Response<dynamic> response = requests[i];
+          _listKey.currentState?.removeItem(
+            0,
+            (context, animation) => SizeTransition(
+              sizeFactor: animation,
+              child: _ResponseCard(
+                key: ValueKey<int>(response.startTimeMilliseconds),
+                response: response,
+                nav: nav,
+                config: _config,
+              ),
+            ),
+            duration: const Duration(milliseconds: 300),
+          );
+        }
+
+        httpContainer.clearRequests();
+        httpContainer.addListener(_onResponseAdded);
+      },
+      icon: const Icon(
+        Icons.cleaning_services,
+        size: 12,
+      ),
+      style: _buttonStyle(context, padding: const EdgeInsets.all(2)),
+      label: const Text('清理'),
+    );
   }
 
   Widget _fullButton() {
@@ -109,31 +167,33 @@ class DioPluggableState extends State<DioInspector> with StoreMixin {
   Widget _itemList(BuildContext context) {
     final List<Response<dynamic>> requests =
         InspectorInstance.httpContainer.pagedRequests;
-    final int length = requests.length;
-    if (length > 0) {
+    if (requests.isNotEmpty) {
       return Scrollbar(
         controller: scrollController,
-        child: CustomScrollView(
+        child: AnimatedList(
+          key: _listKey,
           controller: scrollController,
-          slivers: <Widget>[
-            SliverList(
-              delegate: SliverChildBuilderDelegate(
-                (_, int index) {
-                  final Response<dynamic> r = requests[index];
-                  if (index == length - 2) {
-                    InspectorInstance.httpContainer.loadNextPage();
-                  }
-                  return _ResponseCard(
-                    key: ValueKey<int>(r.startTimeMilliseconds),
-                    response: r,
-                    nav: nav,
-                    config: _config,
-                  );
-                },
-                childCount: length,
+          initialItemCount: requests.length,
+          padding: EdgeInsets.zero,
+          itemBuilder: (context, index, animation) {
+            // 边界检查，防止 AnimatedList 内部状态与数据源不同步
+            if (index < 0 || index >= requests.length) {
+              return const SizedBox.shrink();
+            }
+            final Response<dynamic> r = requests[index];
+            if (index == requests.length - 2) {
+              InspectorInstance.httpContainer.loadNextPage();
+            }
+            return SizeTransition(
+              sizeFactor: animation,
+              child: _ResponseCard(
+                key: ValueKey<int>(r.startTimeMilliseconds),
+                response: r,
+                nav: nav,
+                config: _config,
               ),
-            ),
-          ],
+            );
+          },
         ),
       );
     }
@@ -146,6 +206,7 @@ class DioPluggableState extends State<DioInspector> with StoreMixin {
     );
   }
 
+  ///
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -230,51 +291,161 @@ class DioPluggableState extends State<DioInspector> with StoreMixin {
   }
 }
 
-class _ResponseCard extends StatefulWidget {
-  const _ResponseCard(
-      {required super.key,
-      required this.response,
-      this.nav,
-      required this.config});
+class _ResponseCard extends StatelessWidget {
+  const _ResponseCard({
+    required Key key,
+    required this.response,
+    this.nav,
+    required this.config,
+  }) : super(key: key);
 
   final Response<dynamic> response;
   final NavigatorState? nav;
   final DioConfig config;
 
   @override
-  _ResponseCardState createState() => _ResponseCardState();
+  Widget build(BuildContext context) {
+    final RequestOptions request = response.requestOptions;
+    final DateTime startTime = response.startTime;
+    final DateTime endTime = response.endTime;
+    final Duration duration = endTime.difference(startTime);
+    final int? statusCode = response.statusCode;
+
+    final Color statusColor = _getStatusColor(statusCode);
+    final String method = request.method;
+    final String url =
+        config.showFullUrl ? request.uri.toString() : request.uri.path;
+
+    return Card(
+      margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+      shadowColor: Colors.black.withOpacity(0.3),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(22),
+      ),
+      child: ExpansionTile(
+        collapsedShape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(22)),
+            side: BorderSide.none),
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(22)),
+            side: BorderSide.none),
+        title: _buildTitle(
+          context,
+          statusCode,
+          statusColor,
+          method,
+          startTime,
+          duration,
+        ),
+        subtitle: Padding(
+          padding: const EdgeInsets.only(top: 8.0),
+          child: Text(
+            url,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+        children: [
+          _RequestDetails(
+            response: response,
+            config: config,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTitle(
+    BuildContext context,
+    int? statusCode,
+    Color statusColor,
+    String method,
+    DateTime startTime,
+    Duration duration,
+  ) {
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          decoration: BoxDecoration(
+            color: statusColor,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Text(
+            statusCode.toString(),
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontSize: 12,
+            ),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Text(
+          method,
+          style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+        ),
+        const SizedBox(width: 8),
+        Text(
+          startTime.hms(),
+          style: Theme.of(context).textTheme.bodySmall,
+        ),
+        const Spacer(),
+        Text(
+          '${duration.inMilliseconds}ms',
+          style: Theme.of(context).textTheme.bodySmall,
+        ),
+      ],
+    );
+  }
+
+  Color _getStatusColor(int? statusCode) {
+    if (statusCode == null) {
+      return Colors.grey;
+    }
+    if (statusCode >= 200 && statusCode < 300) {
+      return Colors.green.shade600;
+    }
+    if (statusCode >= 300 && statusCode < 400) {
+      return Colors.orange.shade600;
+    }
+    if (statusCode >= 400 && statusCode < 500) {
+      return Colors.purple.shade600;
+    }
+    if (statusCode >= 500 && statusCode < 600) {
+      return Colors.red.shade600;
+    }
+    return Colors.blueAccent.shade400;
+  }
 }
 
-class _ResponseCardState extends State<_ResponseCard> {
-  final ValueNotifier<bool> _isExpanded = ValueNotifier<bool>(false);
+class _RequestDetails extends StatelessWidget {
+  const _RequestDetails({
+    required this.response,
+    required this.config,
+  });
 
-  DioConfig get config => widget.config;
+  final Response<dynamic> response;
+  final DioConfig config;
 
-  @override
-  void dispose() {
-    _isExpanded.dispose();
-    super.dispose();
-  }
-
-  void _switchExpand() {
-    _isExpanded.value = !_isExpanded.value;
-  }
-
-  Response<dynamic> get _response => widget.response;
-
-  RequestOptions get _request => _response.requestOptions;
+  RequestOptions get _request => response.requestOptions;
 
   /// The start time for the [_request].
-  DateTime get _startTime => _response.startTime;
+  DateTime get _startTime => response.startTime;
 
   /// The end time for the [_response].
-  DateTime get _endTime => _response.endTime;
+  DateTime get _endTime => response.endTime;
 
   /// The duration between the request and the response.
   Duration get _duration => _endTime.difference(_startTime);
 
   /// Status code for the [_response].
-  int get _statusCode => _response.statusCode ?? 0;
+  int get _statusCode => response.statusCode ?? 0;
 
   /// Colors matching status.
   Color get _statusColor {
@@ -305,26 +476,15 @@ class _ResponseCardState extends State<_ResponseCard> {
     return config.showFullUrl ? _requestUri.toString() : _requestUri.path;
   }
 
-  String? _requestHeadersBuilder(BuildContext context) {
-    final Map<String, List<String>> map = _request.headers.map(
-      (key, value) => MapEntry(
-        key,
-        value is Iterable ? value.map((v) => v.toString()).toList() : ['$value'],
-      ),
-    );
-    final Headers headers = Headers.fromMap(map);
-    if (headers.isEmpty) {
-      return null;
+  dynamic tryParseMap(String? data) {
+    if (data != null) {
+      try {
+        return jsonDecode(data);
+      } catch (_) {
+        return data;
+      }
     }
-    return '$headers';
-  }
-
-  String? get _requestQueryBuilder {
-    final q = _requestUri.queryParameters;
-    if (q.isNotEmpty) {
-      return _encoder.convert(q);
-    }
-    return q.toString();
+    return data;
   }
 
   ///form data 参数
@@ -364,7 +524,7 @@ class _ResponseCardState extends State<_ResponseCard> {
 
   /// Data for the [_response].
   String? get _responseDataBuilder {
-    final data = _response.data;
+    final data = response.data;
     if (data == null) {
       return null;
     }
@@ -373,10 +533,10 @@ class _ResponseCardState extends State<_ResponseCard> {
       return _encoder.convert(data);
     }
 
-    if (_response.data is Map) {
-      return _encoder.convert(_response.data);
+    if (response.data is Map) {
+      return _encoder.convert(response.data);
     }
-    final dataString = _response.data.toString();
+    final dataString = response.data.toString();
 
     try {
       return _encoder.convert(jsonDecode(dataString));
@@ -385,23 +545,12 @@ class _ResponseCardState extends State<_ResponseCard> {
     }
   }
 
-  //
-  String? get _responseHeadersBuilder {
-    if (_response.headers.isEmpty) {
-      return null;
+  String? get _requestQueryBuilder {
+    final q = _requestUri.queryParameters;
+    if (q.isNotEmpty) {
+      return _encoder.convert(q);
     }
-    return '${_response.headers}';
-  }
-
-  dynamic tryParseMap(String? data) {
-    if (data != null) {
-      try {
-        return jsonDecode(data);
-      } catch (_) {
-        return data;
-      }
-    }
-    return data;
+    return q.toString();
   }
 
   ///获取全部的数据
@@ -418,218 +567,174 @@ class _ResponseCardState extends State<_ResponseCard> {
     });
   }
 
-  Widget _detailButton(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        if (config.showCopyButton)
-          Padding(
-            padding: const EdgeInsets.only(right: 6),
-            child: TextButton(
-              onPressed: () {
-                Clipboard.setData(ClipboardData(text: getAll()));
-              },
-              style: _buttonStyle(context).copyWith(
-                  backgroundColor: const MaterialStatePropertyAll(Colors.white),
-                  foregroundColor:
-                      const MaterialStatePropertyAll(Colors.black)),
-              child: const Text(
-                '复制全部',
-                style: TextStyle(fontSize: 12, height: 1.2),
-              ),
-            ),
-          ),
-        TextButton(
-          onPressed: _switchExpand,
-          style: _buttonStyle(context),
-          child: const Text(
-            '详情',
-            style: TextStyle(fontSize: 12, height: 1.2),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _infoContent(BuildContext context) {
-    return Row(
-      children: <Widget>[
-        Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 5,
-            vertical: 1,
-          ),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(3),
-            color: _statusColor,
-          ),
-          child: Text(
-            _statusCode.toString(),
-            style: const TextStyle(color: Colors.white, fontSize: 12),
-          ),
-        ),
-        const SizedBox(width: 6),
-        Text(_startTime.hms()),
-        const SizedBox(width: 6),
-        Text(
-          _method,
-          style: const TextStyle(fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(width: 6),
-        Text('${_duration.inMilliseconds}ms'),
-        const Spacer(),
-        _detailButton(context),
-      ],
-    );
-  }
-
-  Widget _detailedContent(BuildContext context) {
-    return ValueListenableBuilder<bool>(
-      valueListenable: _isExpanded,
-      builder: (_, bool value, __) {
-        if (!value) {
-          return const SizedBox.shrink();
-        }
-        return Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              _TagText(
-                tag: '请求头',
-                content: _requestHeadersBuilder(context),
-                config: config,
-              ),
-              if (_requestDataBuilder != null)
-                _TagText(
-                  tag: '请求参数(Body Json)',
-                  content: _requestDataBuilder,
-                  config: config,
-                ),
-              if (_requestUri.queryParameters.isNotEmpty)
-                _TagText(
-                  tag: '查询参数(Query)',
-                  content: _requestQueryBuilder,
-                  config: config,
-                ),
-              if (_formData != null)
-                _TagText(
-                  tag: "FormData",
-                  content: _formData,
-                  config: config,
-                ),
-              _TagText(
-                tag: '返回数据',
-                content: _responseDataBuilder,
-                config: config,
-              ),
-              _TagText(
-                tag: '返回头',
-                content: _responseHeadersBuilder,
-                config: config,
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.all(8),
-      decoration: BoxDecoration(boxShadow: [
-        BoxShadow(
-          color: Colors.grey.shade200.withOpacity(0.5),
-          spreadRadius: 5,
-          blurRadius: 7,
-          offset: const Offset(0, 3), // changes position of shadow
-        ),
-      ]),
-      child: Card(
-        margin: EdgeInsets.zero,
-        elevation: 0,
-        color: Theme.of(context).colorScheme.outlineVariant,
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              _infoContent(context),
-              const SizedBox(height: 10),
-              _TagText(
-                tag: _method,
-                content: _requestUrl,
-                shouldStartFromNewLine: false,
-                nav: widget.nav,
-                fontSize: 14,
-                config: config,
-              ),
-              _detailedContent(context),
-            ],
+    final uri = response.realUri.toString();
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (config.showCopyButton)
+            Wrap(
+              spacing: 12,
+              runSpacing: 12,
+              alignment: WrapAlignment.start,
+              children: [
+                OutlinedButton(
+                    onPressed: () {
+                      Clipboard.setData(ClipboardData(text: uri));
+                    },
+                    child: Text("拷贝 uri")),
+                OutlinedButton(
+                    onPressed: () {
+                      Clipboard.setData(ClipboardData(text: getAll()));
+                    },
+                    child: Text("拷贝全部"))
+              ],
+            ),
+          if (config.showRequestHeaders)
+            _buildDetailItem(
+              context,
+              'Request Headers',
+              _getRequestHeaders(),
+              isJson: true,
+            ),
+          if (_getRequestBody() != null)
+            _buildDetailItem(
+              context,
+              'Request Body',
+              _getRequestBody(),
+              isJson: true,
+            ),
+          if (config.showResponseHeaders)
+            _buildDetailItem(
+              context,
+              'Response Headers',
+              _getResponseHeaders(),
+              isJson: true,
+            ),
+          _buildDetailItem(
+            context,
+            'Response Body',
+            _getResponseBody(),
+            isJson: true,
           ),
-        ),
+        ],
       ),
     );
   }
-}
 
-class _TagText extends StatelessWidget {
-  const _TagText(
-      {required this.tag,
-      this.content,
-      this.shouldStartFromNewLine = true,
-      this.nav,
-      this.fontSize,
-      required this.config});
+  Widget _buildDetailItem(
+    BuildContext context,
+    String title,
+    String? content, {
+    bool isJson = false,
+  }) {
+    if (content == null || content.isEmpty) {
+      return const SizedBox.shrink();
+    }
 
-  final NavigatorState? nav;
-  final String tag;
-  final String? content;
-  final bool shouldStartFromNewLine;
-  final double? fontSize;
-  final DioConfig config;
+    // 尝试 JSON 高亮
+    TextSpan? highlightedSpan;
+    if (isJson && JsonHighlighter.isReady) {
+      highlightedSpan = JsonHighlighter.highlight(content);
+    }
 
-  bool get showCopyButton => config.showCopyButton;
-
-  TextSpan span(BuildContext context) {
-    return TextSpan(
-      children: <TextSpan>[
-        TextSpan(
-          text: '$tag: ',
-          style:
-              const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              title,
+              style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+            ),
+            if (config.showCopyButton)
+              IconButton(
+                icon: const Icon(Icons.copy, size: 16),
+                onPressed: () {
+                  Clipboard.setData(ClipboardData(text: content));
+                },
+              ),
+          ],
         ),
-        if (showCopyButton)
-          TextSpan(
-              text: ' 复制 ',
-              style: TextStyle(
-                  color: Theme.of(context).primaryColor,
-                  fontSize: fontSize ?? 10),
-              recognizer: TapGestureRecognizer()
-                ..onTap = () {
-                  Clipboard.setData(ClipboardData(text: content ?? ''));
-                }),
-        if (shouldStartFromNewLine) const TextSpan(text: '\n'),
-        TextSpan(text: content!, style: TextStyle(fontSize: fontSize ?? 10)),
+        const SizedBox(height: 8),
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: Theme.of(context).canvasColor,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          width: double.infinity,
+          child: highlightedSpan != null
+              ? SelectableText.rich(highlightedSpan)
+              : SelectableText(
+                  content,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        fontFamily: 'monospace',
+                      ),
+                ),
+        ),
+        const SizedBox(height: 16),
       ],
     );
   }
 
-  Widget spanVersion(BuildContext context) {
-    return SelectableText.rich(span(context));
+  String? _getRequestHeaders() {
+    final headers = response.requestOptions.headers;
+    if (headers.isEmpty) {
+      return null;
+    }
+    return const JsonEncoder.withIndent('  ').convert(headers);
   }
 
-  @override
-  Widget build(BuildContext context) {
-    if (content == null) {
-      return const SizedBox.shrink();
+  String? _getRequestBody() {
+    final data = response.requestOptions.data;
+    if (data == null) {
+      return null;
     }
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: spanVersion(context),
+    if (data is FormData) {
+      final fields =
+          data.fields.map((e) => '"${e.key}": "${e.value}"').join(',\n');
+      final files = data.files
+          .map((e) => '"${e.key}": "File: ${e.value.filename}"')
+          .join(',\n');
+      return '{\n$fields,\n$files\n}';
+    }
+    if (data is Map || data is List) {
+      return const JsonEncoder.withIndent('  ').convert(data);
+    }
+    return data.toString();
+  }
+
+  String? _getResponseHeaders() {
+    final headers = response.headers.map;
+    if (headers.isEmpty) {
+      return null;
+    }
+    return const JsonEncoder.withIndent('  ').convert(
+      headers.map((key, value) => MapEntry(key, value.join(', '))),
     );
+  }
+
+  String? _getResponseBody() {
+    final data = response.data;
+    if (data == null) {
+      return null;
+    }
+    if (data is Map || data is List) {
+      return const JsonEncoder.withIndent('  ').convert(data);
+    }
+    try {
+      return const JsonEncoder.withIndent('  ')
+          .convert(jsonDecode(data.toString()));
+    } catch (_) {
+      return data.toString();
+    }
   }
 }
 

@@ -1,3 +1,9 @@
+## 4.4.0
+
+- 增加 json代码高亮
+- 增加显示隐藏 request / response header配置
+- 调整请求卡片UI
+
 ## 4.3.0
 
 - 依赖升级

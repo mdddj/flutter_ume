@@ -16,6 +16,8 @@ T _$identity<T>(T value) => value;
 mixin _$DioConfig implements DiagnosticableTreeMixin {
   bool get showCopyButton;
   bool get showFullUrl;
+  bool get showResponseHeaders;
+  bool get showRequestHeaders;
   String get urlKey;
   String get dataKey;
   String get responseKey;
@@ -40,6 +42,8 @@ mixin _$DioConfig implements DiagnosticableTreeMixin {
       ..add(DiagnosticsProperty('type', 'DioConfig'))
       ..add(DiagnosticsProperty('showCopyButton', showCopyButton))
       ..add(DiagnosticsProperty('showFullUrl', showFullUrl))
+      ..add(DiagnosticsProperty('showResponseHeaders', showResponseHeaders))
+      ..add(DiagnosticsProperty('showRequestHeaders', showRequestHeaders))
       ..add(DiagnosticsProperty('urlKey', urlKey))
       ..add(DiagnosticsProperty('dataKey', dataKey))
       ..add(DiagnosticsProperty('responseKey', responseKey))
@@ -58,6 +62,10 @@ mixin _$DioConfig implements DiagnosticableTreeMixin {
                 other.showCopyButton == showCopyButton) &&
             (identical(other.showFullUrl, showFullUrl) ||
                 other.showFullUrl == showFullUrl) &&
+            (identical(other.showResponseHeaders, showResponseHeaders) ||
+                other.showResponseHeaders == showResponseHeaders) &&
+            (identical(other.showRequestHeaders, showRequestHeaders) ||
+                other.showRequestHeaders == showRequestHeaders) &&
             (identical(other.urlKey, urlKey) || other.urlKey == urlKey) &&
             (identical(other.dataKey, dataKey) || other.dataKey == dataKey) &&
             (identical(other.responseKey, responseKey) ||
@@ -77,6 +85,8 @@ mixin _$DioConfig implements DiagnosticableTreeMixin {
       runtimeType,
       showCopyButton,
       showFullUrl,
+      showResponseHeaders,
+      showRequestHeaders,
       urlKey,
       dataKey,
       responseKey,
@@ -87,7 +97,7 @@ mixin _$DioConfig implements DiagnosticableTreeMixin {
 
   @override
   String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
-    return 'DioConfig(showCopyButton: $showCopyButton, showFullUrl: $showFullUrl, urlKey: $urlKey, dataKey: $dataKey, responseKey: $responseKey, methodKey: $methodKey, statusKey: $statusKey, timestampKey: $timestampKey, timeKey: $timeKey)';
+    return 'DioConfig(showCopyButton: $showCopyButton, showFullUrl: $showFullUrl, showResponseHeaders: $showResponseHeaders, showRequestHeaders: $showRequestHeaders, urlKey: $urlKey, dataKey: $dataKey, responseKey: $responseKey, methodKey: $methodKey, statusKey: $statusKey, timestampKey: $timestampKey, timeKey: $timeKey)';
   }
 }
 
@@ -99,6 +109,8 @@ abstract mixin class $DioConfigCopyWith<$Res> {
   $Res call(
       {bool showCopyButton,
       bool showFullUrl,
+      bool showResponseHeaders,
+      bool showRequestHeaders,
       String urlKey,
       String dataKey,
       String responseKey,
@@ -122,6 +134,8 @@ class _$DioConfigCopyWithImpl<$Res> implements $DioConfigCopyWith<$Res> {
   $Res call({
     Object? showCopyButton = null,
     Object? showFullUrl = null,
+    Object? showResponseHeaders = null,
+    Object? showRequestHeaders = null,
     Object? urlKey = null,
     Object? dataKey = null,
     Object? responseKey = null,
@@ -138,6 +152,14 @@ class _$DioConfigCopyWithImpl<$Res> implements $DioConfigCopyWith<$Res> {
       showFullUrl: null == showFullUrl
           ? _self.showFullUrl
           : showFullUrl // ignore: cast_nullable_to_non_nullable
+              as bool,
+      showResponseHeaders: null == showResponseHeaders
+          ? _self.showResponseHeaders
+          : showResponseHeaders // ignore: cast_nullable_to_non_nullable
+              as bool,
+      showRequestHeaders: null == showRequestHeaders
+          ? _self.showRequestHeaders
+          : showRequestHeaders // ignore: cast_nullable_to_non_nullable
               as bool,
       urlKey: null == urlKey
           ? _self.urlKey
@@ -265,6 +287,8 @@ extension DioConfigPatterns on DioConfig {
     TResult Function(
             bool showCopyButton,
             bool showFullUrl,
+            bool showResponseHeaders,
+            bool showRequestHeaders,
             String urlKey,
             String dataKey,
             String responseKey,
@@ -281,6 +305,8 @@ extension DioConfigPatterns on DioConfig {
         return $default(
             _that.showCopyButton,
             _that.showFullUrl,
+            _that.showResponseHeaders,
+            _that.showRequestHeaders,
             _that.urlKey,
             _that.dataKey,
             _that.responseKey,
@@ -311,6 +337,8 @@ extension DioConfigPatterns on DioConfig {
     TResult Function(
             bool showCopyButton,
             bool showFullUrl,
+            bool showResponseHeaders,
+            bool showRequestHeaders,
             String urlKey,
             String dataKey,
             String responseKey,
@@ -326,6 +354,8 @@ extension DioConfigPatterns on DioConfig {
         return $default(
             _that.showCopyButton,
             _that.showFullUrl,
+            _that.showResponseHeaders,
+            _that.showRequestHeaders,
             _that.urlKey,
             _that.dataKey,
             _that.responseKey,
@@ -353,6 +383,8 @@ extension DioConfigPatterns on DioConfig {
     TResult? Function(
             bool showCopyButton,
             bool showFullUrl,
+            bool showResponseHeaders,
+            bool showRequestHeaders,
             String urlKey,
             String dataKey,
             String responseKey,
@@ -368,6 +400,8 @@ extension DioConfigPatterns on DioConfig {
         return $default(
             _that.showCopyButton,
             _that.showFullUrl,
+            _that.showResponseHeaders,
+            _that.showRequestHeaders,
             _that.urlKey,
             _that.dataKey,
             _that.responseKey,
@@ -387,6 +421,8 @@ class _DioConfig extends DioConfig with DiagnosticableTreeMixin {
   const _DioConfig(
       {this.showCopyButton = false,
       this.showFullUrl = false,
+      this.showResponseHeaders = false,
+      this.showRequestHeaders = true,
       this.urlKey = 'url',
       this.dataKey = '参数',
       this.responseKey = '返回',
@@ -404,6 +440,12 @@ class _DioConfig extends DioConfig with DiagnosticableTreeMixin {
   @override
   @JsonKey()
   final bool showFullUrl;
+  @override
+  @JsonKey()
+  final bool showResponseHeaders;
+  @override
+  @JsonKey()
+  final bool showRequestHeaders;
   @override
   @JsonKey()
   final String urlKey;
@@ -447,6 +489,8 @@ class _DioConfig extends DioConfig with DiagnosticableTreeMixin {
       ..add(DiagnosticsProperty('type', 'DioConfig'))
       ..add(DiagnosticsProperty('showCopyButton', showCopyButton))
       ..add(DiagnosticsProperty('showFullUrl', showFullUrl))
+      ..add(DiagnosticsProperty('showResponseHeaders', showResponseHeaders))
+      ..add(DiagnosticsProperty('showRequestHeaders', showRequestHeaders))
       ..add(DiagnosticsProperty('urlKey', urlKey))
       ..add(DiagnosticsProperty('dataKey', dataKey))
       ..add(DiagnosticsProperty('responseKey', responseKey))
@@ -465,6 +509,10 @@ class _DioConfig extends DioConfig with DiagnosticableTreeMixin {
                 other.showCopyButton == showCopyButton) &&
             (identical(other.showFullUrl, showFullUrl) ||
                 other.showFullUrl == showFullUrl) &&
+            (identical(other.showResponseHeaders, showResponseHeaders) ||
+                other.showResponseHeaders == showResponseHeaders) &&
+            (identical(other.showRequestHeaders, showRequestHeaders) ||
+                other.showRequestHeaders == showRequestHeaders) &&
             (identical(other.urlKey, urlKey) || other.urlKey == urlKey) &&
             (identical(other.dataKey, dataKey) || other.dataKey == dataKey) &&
             (identical(other.responseKey, responseKey) ||
@@ -484,6 +532,8 @@ class _DioConfig extends DioConfig with DiagnosticableTreeMixin {
       runtimeType,
       showCopyButton,
       showFullUrl,
+      showResponseHeaders,
+      showRequestHeaders,
       urlKey,
       dataKey,
       responseKey,
@@ -494,7 +544,7 @@ class _DioConfig extends DioConfig with DiagnosticableTreeMixin {
 
   @override
   String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
-    return 'DioConfig(showCopyButton: $showCopyButton, showFullUrl: $showFullUrl, urlKey: $urlKey, dataKey: $dataKey, responseKey: $responseKey, methodKey: $methodKey, statusKey: $statusKey, timestampKey: $timestampKey, timeKey: $timeKey)';
+    return 'DioConfig(showCopyButton: $showCopyButton, showFullUrl: $showFullUrl, showResponseHeaders: $showResponseHeaders, showRequestHeaders: $showRequestHeaders, urlKey: $urlKey, dataKey: $dataKey, responseKey: $responseKey, methodKey: $methodKey, statusKey: $statusKey, timestampKey: $timestampKey, timeKey: $timeKey)';
   }
 }
 
@@ -509,6 +559,8 @@ abstract mixin class _$DioConfigCopyWith<$Res>
   $Res call(
       {bool showCopyButton,
       bool showFullUrl,
+      bool showResponseHeaders,
+      bool showRequestHeaders,
       String urlKey,
       String dataKey,
       String responseKey,
@@ -532,6 +584,8 @@ class __$DioConfigCopyWithImpl<$Res> implements _$DioConfigCopyWith<$Res> {
   $Res call({
     Object? showCopyButton = null,
     Object? showFullUrl = null,
+    Object? showResponseHeaders = null,
+    Object? showRequestHeaders = null,
     Object? urlKey = null,
     Object? dataKey = null,
     Object? responseKey = null,
@@ -548,6 +602,14 @@ class __$DioConfigCopyWithImpl<$Res> implements _$DioConfigCopyWith<$Res> {
       showFullUrl: null == showFullUrl
           ? _self.showFullUrl
           : showFullUrl // ignore: cast_nullable_to_non_nullable
+              as bool,
+      showResponseHeaders: null == showResponseHeaders
+          ? _self.showResponseHeaders
+          : showResponseHeaders // ignore: cast_nullable_to_non_nullable
+              as bool,
+      showRequestHeaders: null == showRequestHeaders
+          ? _self.showRequestHeaders
+          : showRequestHeaders // ignore: cast_nullable_to_non_nullable
               as bool,
       urlKey: null == urlKey
           ? _self.urlKey

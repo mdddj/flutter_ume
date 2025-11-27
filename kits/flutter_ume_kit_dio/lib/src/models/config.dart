@@ -15,6 +15,8 @@ sealed class DioConfig with _$DioConfig {
   const factory DioConfig(
       {@Default(false) bool showCopyButton,
       @Default(false) bool showFullUrl,
+      @Default(false) bool showResponseHeaders,
+      @Default(true) bool showRequestHeaders,
       @Default('url') String urlKey,
       @Default('参数') String dataKey,
       @Default('返回') String responseKey,
