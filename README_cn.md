@@ -1,25 +1,25 @@
-# flutter_ume
+# flutter_ume_plus
 
 [English](./README.md)
 
 Flutter 应用内调试工具平台
 
-[![platforms](https://img.shields.io/badge/platforms-ios%20%7C%20android%20%7C%20web%20%7C%20macos%20%7C%20windows%20%7C%20linux-lightgrey)](https://pub.dev/packages/flutter_ume) [![license](https://img.shields.io/github/license/bytedance/flutter_ume.svg)](https://github.com/bytedance/flutter_ume/blob/master/LICENSE) [![latest](https://img.shields.io/pub/vpre/flutter_ume.svg)](https://pub.dev/packages/flutter_ume) [![likes](https://badges.bar/flutter_ume/likes)](https://pub.dev/packages/flutter_ume/score) [![popularity](https://badges.bar/flutter_ume/popularity)](https://pub.dev/packages/flutter_ume/score) [![pub points](https://badges.bar/flutter_ume/pub%20points)](https://pub.dev/packages/flutter_ume/score)
+[![platforms](https://img.shields.io/badge/platforms-ios%20%7C%20android%20%7C%20web%20%7C%20macos%20%7C%20windows%20%7C%20linux-lightgrey)](https://pub.dev/packages/flutter_ume_plus) [![license](https://img.shields.io/github/license/mdddj/flutter_ume.svg)](https://github.com/mdddj/flutter_ume/blob/master/LICENSE) [![latest](https://img.shields.io/pub/vpre/flutter_ume_plus.svg)](https://pub.dev/packages/flutter_ume_plus) [![likes](https://badges.bar/flutter_ume_plus/likes)](https://pub.dev/packages/flutter_ume_plus/score) [![popularity](https://badges.bar/flutter_ume_plus/popularity)](https://pub.dev/packages/flutter_ume_plus/score) [![pub points](https://badges.bar/flutter_ume_plus/pub%20points)](https://pub.dev/packages/flutter_ume_plus/score)
 
-<img src="https://github.com/bytedance/flutter_ume/raw/master/ume_logo_256.png" width = "128" height = "128" alt="banner" />
+<img src="https://github.com/mdddj/flutter_ume/raw/master/ume_logo_256.png" width = "128" height = "128" alt="banner" />
 
 **从 `^1.0.0` 起适配 Flutter 3.0，详见后文[快速接入]部分。**
 
-<img src="https://github.com/bytedance/flutter_ume/raw/master/apk_qrcode.png" width = "256" height = "256" alt="banner" />
+<img src="https://github.com/mdddj/flutter_ume/raw/master/apk_qrcode.png" width = "256" height = "256" alt="banner" />
 
 扫码或点击链接下载 apk，快速体验 UME。
-https://github.com/bytedance/flutter_ume/releases/download/v0.2.1.0/app-debug.apk
+https://github.com/mdddj/flutter_ume/releases/download/v0.2.1.0/app-debug.apk
 
-最新版本(1.0.1)内置 13 个插件，
+最新版本内置 13 个插件，
 开发者可以创建自己的插件，并集成进 UME 平台。
 详见本文[为 UME 开发插件](#为-ume-开发插件)部分。
 
-- [flutter_ume](#flutter_ume)
+- [flutter_ume_plus](#flutter_ume_plus)
   - [快速接入](#快速接入)
   - [特别说明](#特别说明)
   - [功能介绍](#功能介绍)
@@ -45,55 +45,28 @@ https://github.com/bytedance/flutter_ume/releases/download/v0.2.1.0/app-debug.ap
 
 1. 修改 `pubspec.yaml`，添加依赖
 
-    **自 `1.0.0` 版本开始适配 Flutter 3。**
-
     ``` yaml
     dev_dependencies:
-      flutter_ume: ^1.0.1
-      flutter_ume_kit_ui: ^1.0.0
-      flutter_ume_kit_device: ^1.0.0
-      flutter_ume_kit_perf: ^1.0.0
-      flutter_ume_kit_show_code: ^1.0.0
-      flutter_ume_kit_console: ^1.0.0
-      flutter_ume_kit_dio: ^1.0.0
-    ```
-
-    **↓ Null-safety 版本，适用于 Flutter 2.x**
-
-    ``` yaml
-    dev_dependencies:
-      flutter_ume: ^0.3.0+1
-      flutter_ume_kit_ui: ^0.3.0+1
-      flutter_ume_kit_device: ^0.3.0
-      flutter_ume_kit_perf: ^0.3.0
-      flutter_ume_kit_show_code: ^0.3.0
-      flutter_ume_kit_console: ^0.3.0
-      flutter_ume_kit_dio: ^0.3.0
-    ```
-
-    **↓ 非 Null-safety 版本，适用于 Flutter 1.x**
-
-    ``` yaml
-    dev_dependencies:
-      flutter_ume: ^0.1.1
-      flutter_ume_kit_ui: ^0.1.1
-      flutter_ume_kit_device: ^0.1.1
-      flutter_ume_kit_perf: ^0.1.1
-      flutter_ume_kit_show_code: ^0.1.1
-      flutter_ume_kit_console: ^0.1.1
+      flutter_ume_plus: ^4.3.0
+      flutter_ume_kit_ui_plus: ^4.3.0
+      flutter_ume_kit_device_plus: ^4.3.0
+      flutter_ume_kit_perf_plus: ^4.3.0
+      flutter_ume_kit_show_code_plus: ^4.3.0
+      flutter_ume_kit_console_plus: ^4.3.0
+      flutter_ume_kit_dio_plus: ^4.4.0
     ```
 
 2. 执行 `flutter pub get`
 3. 引入包
 
     ``` dart
-    import 'package:flutter_ume/flutter_ume.dart'; // UME 框架
-    import 'package:flutter_ume_kit_ui/flutter_ume_kit_ui.dart'; // UI 插件包
-    import 'package:flutter_ume_kit_perf/flutter_ume_kit_perf.dart'; // 性能插件包
-    import 'package:flutter_ume_kit_show_code/flutter_ume_kit_show_code.dart'; // 代码查看插件包
-    import 'package:flutter_ume_kit_device/flutter_ume_kit_device.dart'; // 设备信息插件包
-    import 'package:flutter_ume_kit_console/flutter_ume_kit_console.dart'; // debugPrint 插件包
-    import 'package:flutter_ume_kit_dio/flutter_ume_kit_dio.dart'; // Dio 网络请求调试工具
+    import 'package:flutter_ume_plus/flutter_ume_plus.dart'; // UME 框架
+    import 'package:flutter_ume_kit_ui_plus/flutter_ume_kit_ui_plus.dart'; // UI 插件包
+    import 'package:flutter_ume_kit_perf_plus/flutter_ume_kit_perf_plus.dart'; // 性能插件包
+    import 'package:flutter_ume_kit_show_code_plus/flutter_ume_kit_show_code_plus.dart'; // 代码查看插件包
+    import 'package:flutter_ume_kit_device_plus/flutter_ume_kit_device_plus.dart'; // 设备信息插件包
+    import 'package:flutter_ume_kit_console_plus/flutter_ume_kit_console_plus.dart'; // debugPrint 插件包
+    import 'package:flutter_ume_kit_dio_plus/flutter_ume_kit_dio_plus.dart'; // Dio 网络请求调试工具
     ```
 
 4. 修改程序入口，增加初始化方法及注册插件代码
@@ -115,10 +88,7 @@ https://github.com/bytedance/flutter_ume/releases/download/v0.2.1.0/app-debug.ap
           ..register(DeviceInfoPanel())
           ..register(Console())
           ..register(DioInspector(dio: dio));                  // 传入你的 Dio 实例
-        // flutter_ume 0.3.0 版本之后
         runApp(UMEWidget(child: MyApp(), enable: true)); // 初始化
-        // flutter_ume 0.3.0 版本之前
-        runApp(injectUMEWidget(child: MyApp(), enable: true)); // 初始化
       } else {
         runApp(MyApp());
       }
@@ -168,14 +138,14 @@ showDialog(
         <td width="33.33%" align="center"><p>UI 工具包</p></td>
     </tr>
     <tr>
-        <td width="33.33%" align="center"><img src="https://github.com/bytedance/flutter_ume/raw/master/screenshots/widget_info.png" width="100%" alt="Widget 信息" /></br>Widget 信息</td>
-        <td width="33.33%" align="center"><img src="https://github.com/bytedance/flutter_ume/raw/master/screenshots/widget_detail.png" width="100%" alt="Widget 详情" /></br>Widget 详情</td>
-        <td width="33.33%" align="center"><img src="https://github.com/bytedance/flutter_ume/raw/master/screenshots/align_ruler.png" width="100%" alt="对齐标尺" /></br>对齐标尺</td>
+        <td width="33.33%" align="center"><img src="https://github.com/mdddj/flutter_ume/raw/master/screenshots/widget_info.png" width="100%" alt="Widget 信息" /></br>Widget 信息</td>
+        <td width="33.33%" align="center"><img src="https://github.com/mdddj/flutter_ume/raw/master/screenshots/widget_detail.png" width="100%" alt="Widget 详情" /></br>Widget 详情</td>
+        <td width="33.33%" align="center"><img src="https://github.com/mdddj/flutter_ume/raw/master/screenshots/align_ruler.png" width="100%" alt="对齐标尺" /></br>对齐标尺</td>
     </tr>
     <tr>
-        <td width="33.33%" align="center"><img src="https://github.com/bytedance/flutter_ume/raw/master/screenshots/color_picker.png" width="100%" alt="颜色吸管（新）" /></br>颜色吸管（新）</td>
-        <td width="33.33%" align="center"><img src="https://github.com/bytedance/flutter_ume/raw/master/screenshots/color_sucker.png" width="100%" alt="颜色吸管" /></br>颜色吸管</td>
-        <td width="33.33%" align="center"><img src="https://github.com/bytedance/flutter_ume/raw/master/screenshots/touch_indicator.png" width="100%" alt="触控标记" /></br>触控标记</td>
+        <td width="33.33%" align="center"><img src="https://github.com/mdddj/flutter_ume/raw/master/screenshots/color_picker.png" width="100%" alt="颜色吸管（新）" /></br>颜色吸管（新）</td>
+        <td width="33.33%" align="center"><img src="https://github.com/mdddj/flutter_ume/raw/master/screenshots/color_sucker.png" width="100%" alt="颜色吸管" /></br>颜色吸管</td>
+        <td width="33.33%" align="center"><img src="https://github.com/mdddj/flutter_ume/raw/master/screenshots/touch_indicator.png" width="100%" alt="触控标记" /></br>触控标记</td>
     </tr>
     <tr>
         <td width="33.33%" align="center"></td>
@@ -184,8 +154,8 @@ showDialog(
         <td width="33.33%" align="center"><p>性能工具包</p></td>
     </tr>
     <tr>
-        <td width="33.33%" align="center"><img src="https://github.com/bytedance/flutter_ume/raw/master/screenshots/memory_info.png" width="100%" alt="内存信息" /></br>内存信息</td>
-        <td width="33.33%" align="center"><img src="https://github.com/bytedance/flutter_ume/raw/master/screenshots/perf_overlay.png" width="100%" alt="性能浮层" /></br>性能浮层</td>
+        <td width="33.33%" align="center"><img src="https://github.com/mdddj/flutter_ume/raw/master/screenshots/memory_info.png" width="100%" alt="内存信息" /></br>内存信息</td>
+        <td width="33.33%" align="center"><img src="https://github.com/mdddj/flutter_ume/raw/master/screenshots/perf_overlay.png" width="100%" alt="性能浮层" /></br>性能浮层</td>
     </tr>
     <tr>
         <td width="33.33%" align="center"></td>
@@ -194,8 +164,8 @@ showDialog(
         <td width="33.33%" align="center"><p>设备信息工具包</p></td>
     </tr>
     <tr>
-        <td width="33.33%" align="center"><img src="https://github.com/bytedance/flutter_ume/raw/master/screenshots/cpu_info.png" width="100%" alt="CPU 信息" /></br>CPU 信息</td>
-        <td width="33.33%" align="center"><img src="https://github.com/bytedance/flutter_ume/raw/master/screenshots/device_info.png" width="100%" alt="设备信息" /></br>设备信息</td>
+        <td width="33.33%" align="center"><img src="https://github.com/mdddj/flutter_ume/raw/master/screenshots/cpu_info.png" width="100%" alt="CPU 信息" /></br>CPU 信息</td>
+        <td width="33.33%" align="center"><img src="https://github.com/mdddj/flutter_ume/raw/master/screenshots/device_info.png" width="100%" alt="设备信息" /></br>设备信息</td>
     </tr>
     <tr>
         <td width="33.33%" align="center"></td>
@@ -204,7 +174,7 @@ showDialog(
         <td width="33.33%" align="center"><p>代码查看</p></td>
     </tr>
     <tr>
-        <td width="33.33%" align="center"><img src="https://github.com/bytedance/flutter_ume/raw/master/screenshots/show_code.png" width="100%" alt="代码查看" /></br>代码查看</td>
+        <td width="33.33%" align="center"><img src="https://github.com/mdddj/flutter_ume/raw/master/screenshots/show_code.png" width="100%" alt="代码查看" /></br>代码查看</td>
     </tr>
     <tr>
         <td width="33.33%" align="center"></td>
@@ -213,7 +183,7 @@ showDialog(
         <td width="33.33%" align="center"><p>日志展示</p></td>
     </tr>
     <tr>
-        <td width="33.33%" align="center"><img src="https://github.com/bytedance/flutter_ume/raw/master/screenshots/console.png" width="100%" alt="日志展示" /></br>日志展示</td>
+        <td width="33.33%" align="center"><img src="https://github.com/mdddj/flutter_ume/raw/master/screenshots/console.png" width="100%" alt="日志展示" /></br>日志展示</td>
     </tr>
     <tr>
         <td width="33.33%" align="center"></td>
@@ -222,7 +192,7 @@ showDialog(
         <td width="33.33%" align="center"><p>Dio 网络请求调试工具</p></td>
     </tr>
     <tr>
-        <td width="33.33%" align="center"><img src="https://github.com/bytedance/flutter_ume/raw/master/screenshots/dio_inspector.png" width="100%" alt="Dio 网络请求调试工具" /></br>Dio 网络请求调试工具</td>
+        <td width="33.33%" align="center"><img src="https://github.com/mdddj/flutter_ume/raw/master/screenshots/dio_inspector.png" width="100%" alt="Dio 网络请求调试工具" /></br>Dio 网络请求调试工具</td>
     </tr>
 </table>
 
@@ -236,13 +206,13 @@ showDialog(
 
     ``` yaml
     dependencies:
-      flutter_ume: '>=0.3.0 <0.4.0'
+      flutter_ume_plus: ^4.3.0
     ```
 
 3. 创建插件配置，实现 `Pluggable` 虚类
 
     ``` dart
-    import 'package:flutter_ume/flutter_ume.dart';
+    import 'package:flutter_ume_plus/flutter_ume_plus.dart';
 
     class CustomPlugin implements Pluggable {
       CustomPlugin({Key key});
@@ -312,7 +282,7 @@ showDialog(
 
 自 `0.3.0` 版本起引入了 `PluggableWithNestedWidget`，用以实现在 Widget tree 中插入嵌套 Widget，快速接入嵌入式插件。
 
-可参考 [./kits/flutter_ume_kit_ui/lib/components/color_picker/color_picker.dart](https://github.com/bytedance/flutter_ume/blob/master/kits/flutter_ume_kit_ui/lib/components/color_picker/color_picker.dart) 与 [./kits/flutter_ume_kit_ui/lib/components/touch_indicator/touch_indicator.dart](https://github.com/bytedance/flutter_ume/blob/master/kits/flutter_ume_kit_ui/lib/components/touch_indicator/touch_indicator.dart)。
+可参考 [./kits/flutter_ume_kit_ui/lib/components/color_picker/color_picker.dart](https://github.com/mdddj/flutter_ume/blob/master/kits/flutter_ume_kit_ui/lib/components/color_picker/color_picker.dart) 与 [./kits/flutter_ume_kit_ui/lib/components/touch_indicator/touch_indicator.dart](https://github.com/mdddj/flutter_ume/blob/master/kits/flutter_ume_kit_ui/lib/components/touch_indicator/touch_indicator.dart)。
 
 集成重点如下：
 
@@ -321,10 +291,10 @@ showDialog(
 
 ## 如何在 Release/Profile mode 下使用 UME
 
-**开发者一旦在 Release/Profile mode 下使用 flutter_ume，**
+**开发者一旦在 Release/Profile mode 下使用 flutter_ume_plus，**
 **即认同将自行承担相关风险，**
 
-**对于由此引发的事故，flutter_ume 维护方不承担**
+**对于由此引发的事故，flutter_ume_plus 维护方不承担**
 **任何责任。**
 
 **不建议在 Release/Profile mode 下使用，原因如下：**
@@ -334,7 +304,7 @@ showDialog(
 
 为在 Release/Profile mode 下使用，正常接入流程中需要调整的细节：
 
-1. `pubspec.yaml` 中，`flutter_ume` 及相关插件包需要在 `dependencies` 中引入，而不是 `dev_dependencies`
+1. `pubspec.yaml` 中，`flutter_ume_plus` 及相关插件包需要在 `dependencies` 中引入，而不是 `dev_dependencies`
 2. 调用 `PluginManager.instance.register()` 及 `UMEWidget(child: App())` 初始化方法的代码，不得由于 debug 标记剪枝（如 `kDebugMode`）
 3. 确保以上细节后，依次执行 `flutter clean`、`flutter pub get` 后再进行构建
 
@@ -354,31 +324,19 @@ showDialog(
 
 ### 单测覆盖率
 
-| 包 | master | develop | develop_nullsafety |
-| ---- | ---- | ---- | ---- |
-| flutter_ume | ![Coverage](https://raw.githubusercontent.com/bytedance/flutter_ume/master/coverage_badge.svg) | ![Coverage](https://raw.githubusercontent.com/bytedance/flutter_ume/develop/coverage_badge.svg) | ![Coverage](https://raw.githubusercontent.com/bytedance/flutter_ume/develop_nullsafety/coverage_badge.svg) |
-| flutter_ume_kit_device | ![Coverage](https://raw.githubusercontent.com/bytedance/flutter_ume/master/kits/flutter_ume_kit_device/coverage_badge.svg) | ![Coverage](https://raw.githubusercontent.com/bytedance/flutter_ume/develop/kits/flutter_ume_kit_device/coverage_badge.svg) | ![Coverage](https://raw.githubusercontent.com/bytedance/flutter_ume/develop_nullsafety/kits/flutter_ume_kit_device/coverage_badge.svg) |
-| flutter_ume_kit_perf | ![Coverage](https://raw.githubusercontent.com/bytedance/flutter_ume/master/kits/flutter_ume_kit_perf/coverage_badge.svg) | ![Coverage](https://raw.githubusercontent.com/bytedance/flutter_ume/develop/kits/flutter_ume_kit_perf/coverage_badge.svg) | ![Coverage](https://raw.githubusercontent.com/bytedance/flutter_ume/develop_nullsafety/kits/flutter_ume_kit_perf/coverage_badge.svg) |
-| flutter_ume_kit_show_code | ![Coverage](https://raw.githubusercontent.com/bytedance/flutter_ume/master/kits/flutter_ume_kit_show_code/coverage_badge.svg) | ![Coverage](https://raw.githubusercontent.com/bytedance/flutter_ume/develop/kits/flutter_ume_kit_show_code/coverage_badge.svg) | ![Coverage](https://raw.githubusercontent.com/bytedance/flutter_ume/develop_nullsafety/kits/flutter_ume_kit_show_code/coverage_badge.svg) |
-| flutter_ume_kit_ui | ![Coverage](https://raw.githubusercontent.com/bytedance/flutter_ume/master/kits/flutter_ume_kit_ui/coverage_badge.svg) | ![Coverage](https://raw.githubusercontent.com/bytedance/flutter_ume/develop/kits/flutter_ume_kit_ui/coverage_badge.svg) | ![Coverage](https://raw.githubusercontent.com/bytedance/flutter_ume/develop_nullsafety/kits/flutter_ume_kit_ui/coverage_badge.svg) |
-| flutter_ume_kit_console | ![Coverage](https://raw.githubusercontent.com/bytedance/flutter_ume/master/kits/flutter_ume_kit_console/coverage_badge.svg) | ![Coverage](https://raw.githubusercontent.com/bytedance/flutter_ume/develop/kits/flutter_ume_kit_console/coverage_badge.svg) | ![Coverage](https://raw.githubusercontent.com/bytedance/flutter_ume/develop_nullsafety/kits/flutter_ume_kit_console/coverage_badge.svg) |
-| flutter_ume_kit_dio | ![Coverage](https://raw.githubusercontent.com/bytedance/flutter_ume/master/kits/flutter_ume_kit_dio/coverage_badge.svg) | N/A | ![Coverage](https://raw.githubusercontent.com/bytedance/flutter_ume/develop_nullsafety/kits/flutter_ume_kit_dio/coverage_badge.svg) |
+| 包 | master |
+| ---- | ---- |
+| flutter_ume_plus | ![Coverage](https://raw.githubusercontent.com/mdddj/flutter_ume/master/coverage_badge.svg) |
+| flutter_ume_kit_device_plus | ![Coverage](https://raw.githubusercontent.com/mdddj/flutter_ume/master/kits/flutter_ume_kit_device/coverage_badge.svg) |
+| flutter_ume_kit_perf_plus | ![Coverage](https://raw.githubusercontent.com/mdddj/flutter_ume/master/kits/flutter_ume_kit_perf/coverage_badge.svg) |
+| flutter_ume_kit_show_code_plus | ![Coverage](https://raw.githubusercontent.com/mdddj/flutter_ume/master/kits/flutter_ume_kit_show_code/coverage_badge.svg) |
+| flutter_ume_kit_ui_plus | ![Coverage](https://raw.githubusercontent.com/mdddj/flutter_ume/master/kits/flutter_ume_kit_ui/coverage_badge.svg) |
+| flutter_ume_kit_console_plus | ![Coverage](https://raw.githubusercontent.com/mdddj/flutter_ume/master/kits/flutter_ume_kit_console/coverage_badge.svg) |
+| flutter_ume_kit_dio_plus | ![Coverage](https://raw.githubusercontent.com/mdddj/flutter_ume/master/kits/flutter_ume_kit_dio/coverage_badge.svg) |
 
 ### 版本号规则
 
 请参考 [Semantic versions](https://dart.dev/tools/pub/versioning#semantic-versions)
-
-### Null-safety 版本
-
-| 包 | null-safety 推荐版本号 |
-| ---- | ---- |
-| flutter_ume | 0.3.0+1 |
-| flutter_ume_kit_ui | 0.3.0+1 |
-| flutter_ume_kit_device | 0.3.0 |
-| flutter_ume_kit_perf | 0.3.0 |
-| flutter_ume_kit_show_code | 0.3.0 |
-| flutter_ume_kit_console | 0.3.0 |
-| flutter_ume_kit_dio | 0.3.0 |
 
 ### 更新日志
 

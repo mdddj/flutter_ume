@@ -30,12 +30,6 @@ sealed class DioConfig with _$DioConfig {
 }
 
 class DioConfigUtil with StoreMixin {
-  DioConfigUtil._();
-
-  static DioConfigUtil instance = DioConfigUtil._();
-
-  factory DioConfigUtil() => instance;
-
   final String _key = "_dio_config";
 
   ///加载配置

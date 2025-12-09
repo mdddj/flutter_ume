@@ -137,8 +137,8 @@ class ___ToolBarContent2State extends State<__ToolBarContent2> {
     const cornerRadius = Radius.circular(10);
     return SafeArea(
       child: Material(
-        borderRadius:
-            const BorderRadius.only(topLeft: cornerRadius, topRight: cornerRadius),
+        borderRadius: const BorderRadius.only(
+            topLeft: cornerRadius, topRight: cornerRadius),
         elevation: 20,
         child: Container(
           decoration: const BoxDecoration(
@@ -224,28 +224,37 @@ class ___ToolBarContent2State extends State<__ToolBarContent2> {
                 Container(
                   alignment: Alignment.centerLeft,
                   height: _toolBarHeight,
-                  child: SingleChildScrollView(
-                    // padding: const EdgeInsets.only(left: 80),
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: widget.toolbarActions!.map((tuple) {
-                        final title = tuple.item1;
-                        final widget = tuple.item2;
-                        final action = tuple.item3;
-                        return Padding(
-                          padding: const EdgeInsets.only(left: 6, right: 6),
-                          child: GestureDetector(
-                            onTap: action,
-                            child: Row(
-                              children: [
-                                widget,
-                                Text(title),
-                              ],
+                  child: ScrollConfiguration(
+                    behavior: ScrollConfiguration.of(context).copyWith(
+                      dragDevices: {
+                        PointerDeviceKind.touch,
+                        PointerDeviceKind.mouse,
+                        PointerDeviceKind.trackpad,
+                      },
+                    ),
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      physics: const BouncingScrollPhysics(),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: widget.toolbarActions!.map((tuple) {
+                          final title = tuple.item1;
+                          final icon = tuple.item2;
+                          final action = tuple.item3;
+                          return Padding(
+                            padding: const EdgeInsets.only(left: 6, right: 6),
+                            child: InkWell(
+                              onTap: action,
+                              child: Row(
+                                children: [
+                                  icon,
+                                  Text(title),
+                                ],
+                              ),
                             ),
-                          ),
-                        );
-                      }).toList(),
+                          );
+                        }).toList(),
+                      ),
                     ),
                   ),
                 ),

@@ -13,6 +13,7 @@ import '../instances.dart';
 import '../models/config.dart';
 
 const JsonEncoder _encoder = JsonEncoder.withIndent('  ');
+final _dioSettingCache = DioConfigUtil();
 
 /// JSON 高亮工具类
 class JsonHighlighter {
@@ -86,7 +87,7 @@ class DioPluggableState extends State<DioInspector> with StoreMixin {
     InspectorInstance.httpContainer.addListener(_onResponseAdded);
     Future.microtask(() async {
       await JsonHighlighter.initialize();
-      final value = await DioConfigUtil.instance.getConfig();
+      final value = await _dioSettingCache.getConfig();
       setState(() {
         _config = value;
       });
@@ -280,7 +281,7 @@ class DioPluggableState extends State<DioInspector> with StoreMixin {
   Widget _settingButton() {
     return IconButton(
         onPressed: () {
-          DioConfigUtil.instance.getConfig().then((value) {
+          _dioSettingCache.getConfig().then((value) {
             setState(() {
               _config = value;
               _showSetting = !_showSetting;
@@ -318,7 +319,7 @@ class _ResponseCard extends StatelessWidget {
 
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-      shadowColor: Colors.black.withOpacity(0.3),
+      shadowColor: Colors.black.withValues(alpha: 0.3),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(22),
       ),

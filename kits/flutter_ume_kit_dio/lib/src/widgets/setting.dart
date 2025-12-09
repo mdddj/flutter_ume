@@ -1,5 +1,7 @@
 part of '../../flutter_ume_kit_dio_plus.dart';
 
+final _configUtil = DioConfigUtil();
+
 class SettingWidget extends StatelessWidget {
   final DioConfig config;
   final ValueChanged<DioConfig> onChanged;
@@ -22,7 +24,7 @@ class SettingWidget extends StatelessWidget {
       duration: const Duration(milliseconds: 244),
       child: Card(
         margin: const EdgeInsets.all(8),
-        color: Theme.of(context).colorScheme.surfaceVariant,
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
         child: Padding(
           padding: const EdgeInsets.all(8.0),
           child: SingleChildScrollView(
@@ -94,7 +96,7 @@ class SettingWidget extends StatelessWidget {
 
   void changeSetting(DioConfig Function(DioConfig oldConfig) change) {
     final newConfig = change.call(config);
-    DioConfigUtil.instance.saveConfig(newConfig);
+    _configUtil.saveConfig(newConfig);
     onChanged.call(newConfig);
   }
 }
@@ -210,7 +212,7 @@ class _ChangeKeysState extends State<_ChangeKeys> {
   ///修改配置
   void changeSetting(DioConfig Function(DioConfig oldConfig) change) {
     final newConfig = change.call(config);
-    DioConfigUtil.instance.saveConfig(newConfig);
+    _configUtil.saveConfig(newConfig);
     widget.onChanged.call(newConfig);
   }
 
