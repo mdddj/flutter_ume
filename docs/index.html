@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flutter UME Plus - In-App Debug Kits</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --bg: #0f172a;
+            --bg-card: #1e293b;
+            --bg-code: #0d1117;
+            --text: #f1f5f9;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --accent-blue: #3b82f6;
+            --accent-green: #22c55e;
+            --accent-orange: #f97316;
+            --accent-purple: #a855f7;
+            --accent-pink: #ec4899;
+            --accent-cyan: #06b6d4;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+        
+        /* Header */
+        header {
+            padding: 80px 0 60px;
+            text-align: center;
+            background: linear-gradient(180deg, rgba(99, 102, 241, 0.1) 0%, transparent 100%);
+        }
+        
+        .logo {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 24px;
+            border-radius: 20px;
+        }
+        
+        h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+            background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .tagline {
+            font-size: 1.25rem;
+            color: var(--text-muted);
+            margin-bottom: 32px;
+        }
+        
+        .badges {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .badges img {
+            height: 24px;
+        }
+        
+        /* Install Section */
+        .install-section {
+            padding: 60px 0;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .install-section h2 {
+            font-size: 1.5rem;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+        
+        .code-block {
+            background: var(--bg-code);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            overflow-x: auto;
+            position: relative;
+        }
+        
+        .code-block pre {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 14px;
+            line-height: 1.7;
+        }
+        
+        .code-block .comment { color: #6a737d; }
+        .code-block .key { color: #79c0ff; }
+        .code-block .value { color: #a5d6ff; }
+        
+        /* Kits Grid */
+        .kits-section {
+            padding: 80px 0;
+        }
+        
+        .kits-section h2 {
+            font-size: 2rem;
+            text-align: center;
+            margin-bottom: 16px;
+        }
+        
+        .kits-section .subtitle {
+            text-align: center;
+            color: var(--text-muted);
+            margin-bottom: 48px;
+        }
+        
+        .kits-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+            gap: 24px;
+        }
+        
+        .kit-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 28px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .kit-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+        
+        .kit-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+        
+        .kit-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+        
+        .kit-name {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+        
+        .kit-version {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            background: var(--bg);
+            padding: 4px 8px;
+            border-radius: 6px;
+            margin-left: auto;
+        }
+        
+        .kit-desc {
+            color: var(--text-muted);
+            margin-bottom: 20px;
+            font-size: 0.95rem;
+        }
+        
+        .kit-features {
+            list-style: none;
+            margin-bottom: 20px;
+        }
+        
+        .kit-features li {
+            padding: 6px 0;
+            padding-left: 24px;
+            position: relative;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+        
+        .kit-features li::before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: var(--accent-green);
+            font-weight: 600;
+        }
+        
+        .kit-links {
+            display: flex;
+            gap: 12px;
+        }
+        
+        .kit-link {
+            font-size: 0.85rem;
+            color: var(--primary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .kit-link:hover {
+            text-decoration: underline;
+        }
+        
+        /* Usage Section */
+        .usage-section {
+            padding: 80px 0;
+            background: var(--bg-card);
+        }
+        
+        .usage-section h2 {
+            font-size: 2rem;
+            text-align: center;
+            margin-bottom: 48px;
+        }
+        
+        .usage-steps {
+            display: grid;
+            gap: 32px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .usage-step {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .step-number {
+            width: 36px;
+            height: 36px;
+            background: var(--primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+        
+        .step-content h3 {
+            font-size: 1.1rem;
+            margin-bottom: 12px;
+        }
+        
+        .step-content .code-block {
+            margin-top: 12px;
+        }
+        
+        /* Footer */
+        footer {
+            padding: 48px 0;
+            text-align: center;
+            border-top: 1px solid var(--border);
+        }
+        
+        footer p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+        
+        footer a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+        
+        footer a:hover {
+            text-decoration: underline;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            h1 { font-size: 2rem; }
+            .kits-grid { grid-template-columns: 1fr; }
+            header { padding: 48px 0 40px; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <img src="https://github.com/mdddj/flutter_ume/raw/master/ume_logo_256.png" alt="UME Logo" class="logo">
+            <h1>Flutter UME Plus</h1>
+            <p class="tagline">In-App Debug Kits Platform for Flutter Apps</p>
+            <div class="badges">
+                <a href="https://pub.dev/packages/flutter_ume_plus"><img src="https://img.shields.io/pub/v/flutter_ume_plus.svg" alt="pub"></a>
+                <a href="https://github.com/mdddj/flutter_ume"><img src="https://img.shields.io/github/stars/mdddj/flutter_ume?style=social" alt="stars"></a>
+                <a href="https://github.com/mdddj/flutter_ume/blob/master/LICENSE"><img src="https://img.shields.io/github/license/mdddj/flutter_ume" alt="license"></a>
+            </div>
+        </div>
+    </header>
+
+    <section class="install-section">
+        <div class="container">
+            <h2>Quick Install</h2>
+            <div class="code-block">
+<pre><span class="comment"># pubspec.yaml</span>
+<span class="key">dev_dependencies:</span>
+  <span class="key">flutter_ume_plus:</span> <span class="value">^4.3.0</span>
+  <span class="key">flutter_ume_kit_ui_plus:</span> <span class="value">^4.3.0</span>
+  <span class="key">flutter_ume_kit_device_plus:</span> <span class="value">^4.3.0</span>
+  <span class="key">flutter_ume_kit_perf_plus:</span> <span class="value">^4.3.0</span>
+  <span class="key">flutter_ume_kit_console_plus:</span> <span class="value">^4.4.0</span>
+  <span class="key">flutter_ume_kit_dio_plus:</span> <span class="value">^4.4.0</span></pre>
+            </div>
+        </div>
+    </section>
+
+    <section class="kits-section">
+        <div class="container">
+            <h2>Available Kits</h2>
+            <p class="subtitle">Powerful debug tools for every aspect of your Flutter app</p>
+            
+            <div class="kits-grid">
+                <!-- UI Kit -->
+                <div class="kit-card">
+                    <div class="kit-header">
+                        <div class="kit-icon" style="background: linear-gradient(135deg, #ec4899, #f43f5e);">🎨</div>
+                        <span class="kit-name">UI Kit</span>
+                        <span class="kit-version">v4.3.0</span>
+                    </div>
+                    <p class="kit-desc">Comprehensive UI inspection and debugging tools for Flutter widgets.</p>
+                    <ul class="kit-features">
+                        <li>Widget Info Inspector</li>
+                        <li>Widget Detail Inspector</li>
+                        <li>Color Picker & Color Sucker</li>
+                        <li>Align Ruler</li>
+                        <li>Touch Indicator</li>
+                    </ul>
+                    <div class="kit-links">
+                        <a href="https://pub.dev/packages/flutter_ume_kit_ui_plus" class="kit-link">📦 pub.dev</a>
+                    </div>
+                </div>
+
+                <!-- Console Kit -->
+                <div class="kit-card">
+                    <div class="kit-header">
+                        <div class="kit-icon" style="background: linear-gradient(135deg, #22c55e, #10b981);">📝</div>
+                        <span class="kit-name">Console Kit</span>
+                        <span class="kit-version">v4.4.0</span>
+                    </div>
+                    <p class="kit-desc">Advanced console for viewing debugPrint logs with multiple UI styles.</p>
+                    <ul class="kit-features">
+                        <li>3 UI Styles: Classic, Card, Compact</li>
+                        <li>URL Auto-detection & Click</li>
+                        <li>Keyword Highlighting</li>
+                        <li>Filter & Search</li>
+                        <li>Share Logs</li>
+                    </ul>
+                    <div class="kit-links">
+                        <a href="https://pub.dev/packages/flutter_ume_kit_console_plus" class="kit-link">📦 pub.dev</a>
+                    </div>
+                </div>
+
+                <!-- Dio Kit -->
+                <div class="kit-card">
+                    <div class="kit-header">
+                        <div class="kit-icon" style="background: linear-gradient(135deg, #3b82f6, #6366f1);">🌐</div>
+                        <span class="kit-name">Dio Kit</span>
+                        <span class="kit-version">v4.4.0</span>
+                    </div>
+                    <p class="kit-desc">Network request inspector for Dio HTTP client with detailed request/response info.</p>
+                    <ul class="kit-features">
+                        <li>Request/Response Inspector</li>
+                        <li>Headers & Body Viewer</li>
+                        <li>Response Time Tracking</li>
+                        <li>Error Highlighting</li>
+                        <li>Copy & Share</li>
+                    </ul>
+                    <div class="kit-links">
+                        <a href="https://pub.dev/packages/flutter_ume_kit_dio_plus" class="kit-link">📦 pub.dev</a>
+                    </div>
+                </div>
+
+                <!-- Device Kit -->
+                <div class="kit-card">
+                    <div class="kit-header">
+                        <div class="kit-icon" style="background: linear-gradient(135deg, #f97316, #eab308);">📱</div>
+                        <span class="kit-name">Device Kit</span>
+                        <span class="kit-version">v4.3.0</span>
+                    </div>
+                    <p class="kit-desc">Device information and system details for debugging platform-specific issues.</p>
+                    <ul class="kit-features">
+                        <li>Device Info Panel</li>
+                        <li>CPU Information</li>
+                        <li>System Details</li>
+                        <li>Platform Detection</li>
+                    </ul>
+                    <div class="kit-links">
+                        <a href="https://pub.dev/packages/flutter_ume_kit_device_plus" class="kit-link">📦 pub.dev</a>
+                    </div>
+                </div>
+
+                <!-- Perf Kit -->
+                <div class="kit-card">
+                    <div class="kit-header">
+                        <div class="kit-icon" style="background: linear-gradient(135deg, #a855f7, #8b5cf6);">⚡</div>
+                        <span class="kit-name">Performance Kit</span>
+                        <span class="kit-version">v4.3.0</span>
+                    </div>
+                    <p class="kit-desc">Performance monitoring tools for tracking memory usage and frame rates.</p>
+                    <ul class="kit-features">
+                        <li>Memory Info Monitor</li>
+                        <li>Performance Overlay</li>
+                        <li>FPS Tracking</li>
+                        <li>Memory Leak Detection</li>
+                    </ul>
+                    <div class="kit-links">
+                        <a href="https://pub.dev/packages/flutter_ume_kit_perf_plus" class="kit-link">📦 pub.dev</a>
+                    </div>
+                </div>
+
+                <!-- Show Code Kit -->
+                <div class="kit-card">
+                    <div class="kit-header">
+                        <div class="kit-icon" style="background: linear-gradient(135deg, #06b6d4, #0ea5e9);">💻</div>
+                        <span class="kit-name">Show Code Kit</span>
+                        <span class="kit-version">v4.3.0</span>
+                    </div>
+                    <p class="kit-desc">View source code of widgets directly in your running app.</p>
+                    <ul class="kit-features">
+                        <li>Source Code Viewer</li>
+                        <li>Syntax Highlighting</li>
+                        <li>Code Navigation</li>
+                        <li>Share Code Snippets</li>
+                    </ul>
+                    <div class="kit-links">
+                        <a href="https://pub.dev/packages/flutter_ume_kit_show_code_plus" class="kit-link">📦 pub.dev</a>
+                    </div>
+                </div>
+
+                <!-- Channel Monitor Kit -->
+                <div class="kit-card">
+                    <div class="kit-header">
+                        <div class="kit-icon" style="background: linear-gradient(135deg, #64748b, #475569);">📡</div>
+                        <span class="kit-name">Channel Monitor</span>
+                        <span class="kit-version">v4.3.0</span>
+                    </div>
+                    <p class="kit-desc">Monitor platform channel communications between Flutter and native code.</p>
+                    <ul class="kit-features">
+                        <li>Method Channel Monitor</li>
+                        <li>Event Channel Tracking</li>
+                        <li>Message Logging</li>
+                        <li>Performance Metrics</li>
+                    </ul>
+                    <div class="kit-links">
+                        <a href="https://pub.dev/packages/flutter_ume_kit_channel_monitor_plus" class="kit-link">📦 pub.dev</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="usage-section">
+        <div class="container">
+            <h2>How to Use</h2>
+            <div class="usage-steps">
+                <div class="usage-step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h3>Add dependencies to pubspec.yaml</h3>
+                        <p style="color: var(--text-muted);">Add the packages you need to your dev_dependencies.</p>
+                    </div>
+                </div>
+                
+                <div class="usage-step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h3>Import and register plugins</h3>
+                        <div class="code-block">
+<pre><span class="comment">// main.dart</span>
+import 'package:flutter_ume_plus/flutter_ume_plus.dart';
+import 'package:flutter_ume_kit_ui_plus/flutter_ume_kit_ui_plus.dart';
+import 'package:flutter_ume_kit_console_plus/flutter_ume_kit_console_plus.dart';
+import 'package:flutter_ume_kit_dio_plus/flutter_ume_kit_dio_plus.dart';
+
+void main() {
+  if (kDebugMode) {
+    PluginManager.instance
+      ..register(WidgetInfoInspector())
+      ..register(WidgetDetailInspector())
+      ..register(ColorPicker())
+      ..register(AlignRuler())
+      ..register(Console())
+      ..register(DioInspector(dio: dio));
+    runApp(UMEWidget(child: MyApp(), enable: true));
+  } else {
+    runApp(MyApp());
+  }
+}</pre>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="usage-step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h3>Run your app</h3>
+                        <p style="color: var(--text-muted);">A floating debug button will appear. Tap it to access all registered debug tools.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <p>
+                Made with ❤️ by <a href="https://github.com/mdddj">mdddj</a> · 
+                Fork of <a href="https://github.com/bytedance/flutter_ume">ByteDance Flutter UME</a> · 
+                <a href="https://github.com/mdddj/flutter_ume">GitHub</a>
+            </p>
+        </div>
+    </footer>
+</body>
+</html>
