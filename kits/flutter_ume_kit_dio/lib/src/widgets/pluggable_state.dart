@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
-import 'package:flex_color_scheme/flex_color_scheme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_ume_plus/flutter_ume_plus.dart';
@@ -32,7 +31,7 @@ class JsonHighlighter {
       debugPrint("高亮初始化完成");
     } catch (e) {
       // 初始化失败时使用普通文本
-      debugPrint("代码高亮初始化失败:${e}");
+      debugPrint("代码高亮初始化失败:$e");
     }
     _initializing = false;
   }
@@ -212,10 +211,8 @@ class DioPluggableState extends State<DioInspector> with StoreMixin {
   Widget build(BuildContext context) {
     return MaterialApp(
       themeMode: themeMode,
-      theme: themeData ??
-          FlexThemeData.light(useMaterial3: true, scheme: FlexScheme.redM3),
+      theme: themeData,
       home: DefaultTextStyle.merge(
-        style: Theme.of(context).textTheme.bodyMedium,
         child: Align(
           alignment: Alignment.bottomCenter,
           child: AnimatedContainer(
@@ -359,6 +356,28 @@ class _ResponseCard extends StatelessWidget {
     );
   }
 
+  /// 计算响应数据大小
+  int _getResponseSize() {
+    final data = response.data;
+    if (data == null) return 0;
+
+    if (data is String) {
+      return utf8.encode(data).length;
+    } else if (data is List<int>) {
+      return data.length;
+    } else if (data is Map || data is List) {
+      return utf8.encode(jsonEncode(data)).length;
+    }
+    return utf8.encode(data.toString()).length;
+  }
+
+  /// 格式化字节大小
+  String _formatBytes(int bytes) {
+    if (bytes < 1024) return '$bytes B';
+    if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(1)} KB';
+    return '${(bytes / (1024 * 1024)).toStringAsFixed(2)} MB';
+  }
+
   Widget _buildTitle(
     BuildContext context,
     int? statusCode,
@@ -367,6 +386,8 @@ class _ResponseCard extends StatelessWidget {
     DateTime startTime,
     Duration duration,
   ) {
+    final responseSize = _getResponseSize();
+
     return Row(
       children: [
         Container(
@@ -397,6 +418,22 @@ class _ResponseCard extends StatelessWidget {
           style: Theme.of(context).textTheme.bodySmall,
         ),
         const Spacer(),
+        if (responseSize > 0)
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+            margin: const EdgeInsets.only(right: 8),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surfaceContainerHighest,
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Text(
+              _formatBytes(responseSize),
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w500,
+                  ),
+            ),
+          ),
         Text(
           '${duration.inMilliseconds}ms',
           style: Theme.of(context).textTheme.bodySmall,
@@ -577,22 +614,12 @@ class _RequestDetails extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (config.showCopyButton)
-            Wrap(
-              spacing: 12,
-              runSpacing: 12,
-              alignment: WrapAlignment.start,
-              children: [
-                OutlinedButton(
-                    onPressed: () {
-                      Clipboard.setData(ClipboardData(text: uri));
-                    },
-                    child: Text("拷贝 uri")),
-                OutlinedButton(
-                    onPressed: () {
-                      Clipboard.setData(ClipboardData(text: getAll()));
-                    },
-                    child: Text("拷贝全部"))
-              ],
+            Padding(
+              padding: const EdgeInsets.only(bottom: 16),
+              child: _CopyActionsBar(
+                uri: uri,
+                allData: getAll(),
+              ),
             ),
           if (config.showRequestHeaders)
             _buildDetailItem(
@@ -635,53 +662,11 @@ class _RequestDetails extends StatelessWidget {
     if (content == null || content.isEmpty) {
       return const SizedBox.shrink();
     }
-
-    // 尝试 JSON 高亮
-    TextSpan? highlightedSpan;
-    if (isJson && JsonHighlighter.isReady) {
-      highlightedSpan = JsonHighlighter.highlight(content);
-    }
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              title,
-              style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-            ),
-            if (config.showCopyButton)
-              IconButton(
-                icon: const Icon(Icons.copy, size: 16),
-                onPressed: () {
-                  Clipboard.setData(ClipboardData(text: content));
-                },
-              ),
-          ],
-        ),
-        const SizedBox(height: 8),
-        Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: Theme.of(context).canvasColor,
-            borderRadius: BorderRadius.circular(8),
-          ),
-          width: double.infinity,
-          child: highlightedSpan != null
-              ? SelectableText.rich(highlightedSpan)
-              : SelectableText(
-                  content,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        fontFamily: 'monospace',
-                      ),
-                ),
-        ),
-        const SizedBox(height: 16),
-      ],
+    return _DetailSection(
+      title: title,
+      content: content,
+      isJson: isJson,
+      showCopyButton: config.showCopyButton,
     );
   }
 
@@ -743,4 +728,338 @@ extension _DateTimeExtension on DateTime {
   String hms([String separator = ':']) => '$hour$separator'
       '${'$minute'.padLeft(2, '0')}$separator'
       '${'$second'.padLeft(2, '0')}';
+}
+
+/// 简洁的复制操作栏
+class _CopyActionsBar extends StatefulWidget {
+  const _CopyActionsBar({
+    required this.uri,
+    required this.allData,
+  });
+
+  final String uri;
+  final String allData;
+
+  @override
+  State<_CopyActionsBar> createState() => _CopyActionsBarState();
+}
+
+class _CopyActionsBarState extends State<_CopyActionsBar> {
+  bool _expanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 200),
+      curve: Curves.easeInOut,
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // 主按钮行
+          InkWell(
+            onTap: () => setState(() => _expanded = !_expanded),
+            borderRadius: BorderRadius.circular(12),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.copy_rounded,
+                    size: 18,
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                  const SizedBox(width: 10),
+                  Text(
+                    '复制',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: colorScheme.onSurface,
+                    ),
+                  ),
+                  const Spacer(),
+                  AnimatedRotation(
+                    turns: _expanded ? 0.5 : 0,
+                    duration: const Duration(milliseconds: 200),
+                    child: Icon(
+                      Icons.keyboard_arrow_down_rounded,
+                      size: 20,
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          // 展开的选项
+          AnimatedCrossFade(
+            firstChild: const SizedBox.shrink(),
+            secondChild: Padding(
+              padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: _ActionChip(
+                      icon: Icons.link_rounded,
+                      label: 'URI',
+                      onTap: () => Clipboard.setData(
+                        ClipboardData(text: widget.uri),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: _ActionChip(
+                      icon: Icons.data_object_rounded,
+                      label: '全部数据',
+                      onTap: () => Clipboard.setData(
+                        ClipboardData(text: widget.allData),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            crossFadeState: _expanded
+                ? CrossFadeState.showSecond
+                : CrossFadeState.showFirst,
+            duration: const Duration(milliseconds: 200),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ActionChip extends StatelessWidget {
+  const _ActionChip({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Material(
+      color: colorScheme.surface,
+      borderRadius: BorderRadius.circular(8),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(8),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          decoration: BoxDecoration(
+            border: Border.all(
+              color: colorScheme.outlineVariant,
+              width: 1,
+            ),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, size: 16, color: colorScheme.primary),
+              const SizedBox(width: 6),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                  color: colorScheme.onSurface,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// 可折叠的详情区块组件
+class _DetailSection extends StatefulWidget {
+  const _DetailSection({
+    required this.title,
+    required this.content,
+    this.isJson = false,
+    this.showCopyButton = true,
+  });
+
+  final String title;
+  final String content;
+  final bool isJson;
+  final bool showCopyButton;
+
+  @override
+  State<_DetailSection> createState() => _DetailSectionState();
+}
+
+class _DetailSectionState extends State<_DetailSection> {
+  bool _expanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    // JSON 高亮
+    TextSpan? highlightedSpan;
+    if (widget.isJson && JsonHighlighter.isReady) {
+      highlightedSpan = JsonHighlighter.highlight(widget.content);
+    }
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: colorScheme.outlineVariant.withOpacity(0.5),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // 标题栏
+          InkWell(
+            onTap: () => setState(() => _expanded = !_expanded),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              child: Row(
+                children: [
+                  Container(
+                    width: 6,
+                    height: 6,
+                    decoration: BoxDecoration(
+                      color: _getTitleColor(widget.title, colorScheme),
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      widget.title,
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: colorScheme.onSurface,
+                      ),
+                    ),
+                  ),
+                  if (widget.showCopyButton && _expanded)
+                    _MiniIconButton(
+                      icon: Icons.copy_rounded,
+                      onTap: () => Clipboard.setData(
+                        ClipboardData(text: widget.content),
+                      ),
+                    ),
+                  const SizedBox(width: 4),
+                  AnimatedRotation(
+                    turns: _expanded ? 0.5 : 0,
+                    duration: const Duration(milliseconds: 200),
+                    child: Icon(
+                      Icons.keyboard_arrow_down_rounded,
+                      size: 18,
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          // 内容区域
+          AnimatedCrossFade(
+            firstChild: const SizedBox.shrink(),
+            secondChild: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.fromLTRB(14, 0, 14, 14),
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: colorScheme.surface,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: highlightedSpan != null
+                    ? SelectableText.rich(
+                        highlightedSpan,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          height: 1.5,
+                          fontFamily: 'monospace',
+                        ),
+                      )
+                    : SelectableText(
+                        widget.content,
+                        style: TextStyle(
+                          fontSize: 12,
+                          height: 1.5,
+                          fontFamily: 'monospace',
+                          color: colorScheme.onSurface,
+                        ),
+                      ),
+              ),
+            ),
+            crossFadeState: _expanded
+                ? CrossFadeState.showSecond
+                : CrossFadeState.showFirst,
+            duration: const Duration(milliseconds: 200),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Color _getTitleColor(String title, ColorScheme colorScheme) {
+    if (title.contains('Request')) {
+      return colorScheme.primary;
+    } else if (title.contains('Response')) {
+      return colorScheme.tertiary;
+    }
+    return colorScheme.secondary;
+  }
+}
+
+/// 迷你图标按钮
+class _MiniIconButton extends StatelessWidget {
+  const _MiniIconButton({
+    required this.icon,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(6),
+      child: Container(
+        padding: const EdgeInsets.all(6),
+        decoration: BoxDecoration(
+          color: colorScheme.surfaceContainerHighest,
+          borderRadius: BorderRadius.circular(6),
+        ),
+        child: Icon(
+          icon,
+          size: 14,
+          color: colorScheme.onSurfaceVariant,
+        ),
+      ),
+    );
+  }
 }
