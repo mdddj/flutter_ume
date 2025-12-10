@@ -485,23 +485,6 @@ class _RequestDetails extends StatelessWidget {
   /// Status code for the [_response].
   int get _statusCode => response.statusCode ?? 0;
 
-  /// Colors matching status.
-  Color get _statusColor {
-    if (_statusCode >= 200 && _statusCode < 300) {
-      return Colors.lightGreen;
-    }
-    if (_statusCode >= 300 && _statusCode < 400) {
-      return Colors.orangeAccent;
-    }
-    if (_statusCode >= 400 && _statusCode < 500) {
-      return Colors.purple;
-    }
-    if (_statusCode >= 500 && _statusCode < 600) {
-      return Colors.red;
-    }
-    return Colors.blueAccent;
-  }
-
   /// The method that the [_request] used.
   String get _method => _request.method;
 
@@ -925,7 +908,7 @@ class _DetailSectionState extends State<_DetailSection> {
         color: colorScheme.surfaceContainerLow,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: colorScheme.outlineVariant.withOpacity(0.5),
+          color: colorScheme.outlineVariant.withValues(alpha: 0.5),
         ),
       ),
       child: Column(
