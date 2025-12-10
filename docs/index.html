@@ -6,147 +6,326 @@
     <title>Flutter UME Plus - 应用内调试工具平台</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #6366f1;
-            --primary-dark: #4f46e5;
-            --bg: #0f172a;
-            --bg-card: #1e293b;
-            --bg-code: #0d1117;
-            --text: #f1f5f9;
-            --text-muted: #94a3b8;
-            --border: #334155;
-            --accent-green: #22c55e;
+            --background: 0 0% 100%;
+            --foreground: 240 10% 3.9%;
+            --card: 0 0% 100%;
+            --card-foreground: 240 10% 3.9%;
+            --popover: 0 0% 100%;
+            --popover-foreground: 240 10% 3.9%;
+            --primary: 240 5.9% 10%;
+            --primary-foreground: 0 0% 98%;
+            --secondary: 240 4.8% 95.9%;
+            --secondary-foreground: 240 5.9% 10%;
+            --muted: 240 4.8% 95.9%;
+            --muted-foreground: 240 3.8% 46.1%;
+            --accent: 240 4.8% 95.9%;
+            --accent-foreground: 240 5.9% 10%;
+            --destructive: 0 84.2% 60.2%;
+            --destructive-foreground: 0 0% 98%;
+            --border: 240 5.9% 90%;
+            --input: 240 5.9% 90%;
+            --ring: 240 5.9% 10%;
+            --radius: 0.5rem;
         }
-        
+
+        .dark {
+            --background: 240 10% 3.9%;
+            --foreground: 0 0% 98%;
+            --card: 240 10% 3.9%;
+            --card-foreground: 0 0% 98%;
+            --popover: 240 10% 3.9%;
+            --popover-foreground: 0 0% 98%;
+            --primary: 0 0% 98%;
+            --primary-foreground: 240 5.9% 10%;
+            --secondary: 240 3.7% 15.9%;
+            --secondary-foreground: 0 0% 98%;
+            --muted: 240 3.7% 15.9%;
+            --muted-foreground: 240 5% 64.9%;
+            --accent: 240 3.7% 15.9%;
+            --accent-foreground: 0 0% 98%;
+            --destructive: 0 62.8% 30.6%;
+            --destructive-foreground: 0 0% 98%;
+            --border: 240 3.7% 15.9%;
+            --input: 240 3.7% 15.9%;
+            --ring: 240 4.9% 83.9%;
+        }
+
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        
+
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: var(--bg);
-            color: var(--text);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+            background: hsl(var(--background));
+            color: hsl(var(--foreground));
             line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
         }
-        
-        .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
-        
+
+        .container { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+
+        /* Header */
         header {
-            padding: 80px 0 60px;
+            padding: 100px 0 80px;
             text-align: center;
-            background: linear-gradient(180deg, rgba(99, 102, 241, 0.1) 0%, transparent 100%);
+            border-bottom: 1px solid hsl(var(--border));
         }
-        
-        .logo { width: 80px; height: 80px; margin-bottom: 24px; border-radius: 20px; }
-        
-        h1 {
-            font-size: 3rem;
-            font-weight: 700;
-            margin-bottom: 16px;
-            background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        
-        .tagline { font-size: 1.25rem; color: var(--text-muted); margin-bottom: 32px; }
-        
-        .badges { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
-        .badges img { height: 24px; }
-        
-        .install-section { padding: 60px 0; border-bottom: 1px solid var(--border); }
-        .install-section h2 { font-size: 1.5rem; margin-bottom: 24px; text-align: center; }
-        
-        .code-block {
-            background: var(--bg-code);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 24px;
-            overflow-x: auto;
-        }
-        
-        .code-block pre { font-family: 'JetBrains Mono', monospace; font-size: 14px; line-height: 1.7; }
-        .code-block .comment { color: #6a737d; }
-        .code-block .key { color: #79c0ff; }
-        .code-block .value { color: #a5d6ff; }
-        
-        .kits-section { padding: 80px 0; }
-        .kits-section h2 { font-size: 2rem; text-align: center; margin-bottom: 16px; }
-        .kits-section .subtitle { text-align: center; color: var(--text-muted); margin-bottom: 48px; }
-        
-        .kits-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 24px; }
-        
-        .kit-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
+
+        .logo {
+            width: 64px; height: 64px;
+            margin-bottom: 24px;
             border-radius: 16px;
-            padding: 28px;
-            transition: transform 0.2s, box-shadow 0.2s;
+            border: 1px solid hsl(var(--border));
         }
-        
-        .kit-card:hover { transform: translateY(-4px); box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3); }
-        
-        .kit-header { display: flex; align-items: center; gap: 16px; margin-bottom: 16px; }
-        
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            letter-spacing: -0.025em;
+            margin-bottom: 12px;
+        }
+
+        .tagline {
+            font-size: 1.125rem;
+            color: hsl(var(--muted-foreground));
+            margin-bottom: 28px;
+        }
+
+        .badges { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+        .badges img { height: 22px; border-radius: 4px; }
+
+        /* Install */
+        .install-section {
+            padding: 64px 0;
+            border-bottom: 1px solid hsl(var(--border));
+        }
+
+        .install-section h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .code-block {
+            background: hsl(var(--muted));
+            border: 1px solid hsl(var(--border));
+            border-radius: var(--radius);
+            padding: 20px 24px;
+            overflow-x: auto;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            line-height: 1.7;
+        }
+
+        .code-block .comment { color: hsl(var(--muted-foreground)); }
+        .code-block .key { color: hsl(var(--foreground)); }
+        .code-block .value { color: hsl(var(--muted-foreground)); }
+
+        /* Kits */
+        .kits-section { padding: 80px 0; }
+
+        .kits-section h2 {
+            font-size: 1.875rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 12px;
+            letter-spacing: -0.025em;
+        }
+
+        .kits-section .subtitle {
+            text-align: center;
+            color: hsl(var(--muted-foreground));
+            margin-bottom: 48px;
+        }
+
+        .kits-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 16px;
+        }
+
+        .kit-card {
+            background: hsl(var(--card));
+            border: 1px solid hsl(var(--border));
+            border-radius: var(--radius);
+            padding: 24px;
+            transition: box-shadow 0.2s, border-color 0.2s;
+        }
+
+        .kit-card:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            border-color: hsl(var(--foreground) / 0.2);
+        }
+
+        .kit-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
         .kit-icon {
-            width: 48px; height: 48px; border-radius: 12px;
-            display: flex; align-items: center; justify-content: center; font-size: 24px;
+            width: 40px; height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            background: hsl(var(--muted));
+            border: 1px solid hsl(var(--border));
         }
-        
-        .kit-name { font-size: 1.25rem; font-weight: 600; }
-        
+
+        .kit-name { font-size: 1rem; font-weight: 600; }
+
         .kit-version {
-            font-size: 0.75rem; color: var(--text-muted);
-            background: var(--bg); padding: 4px 8px; border-radius: 6px; margin-left: auto;
+            font-size: 0.75rem;
+            font-family: 'JetBrains Mono', monospace;
+            color: hsl(var(--muted-foreground));
+            background: hsl(var(--muted));
+            padding: 2px 8px;
+            border-radius: 9999px;
+            margin-left: auto;
         }
-        
-        .kit-desc { color: var(--text-muted); margin-bottom: 20px; font-size: 0.95rem; }
-        
-        .kit-features { list-style: none; margin-bottom: 20px; }
+
+        .kit-desc {
+            color: hsl(var(--muted-foreground));
+            margin-bottom: 16px;
+            font-size: 0.875rem;
+            line-height: 1.5;
+        }
+
+        .kit-features { list-style: none; margin-bottom: 16px; }
+
         .kit-features li {
-            padding: 6px 0; padding-left: 24px; position: relative;
-            font-size: 0.9rem; color: var(--text-muted);
+            padding: 4px 0;
+            padding-left: 20px;
+            position: relative;
+            font-size: 0.8125rem;
+            color: hsl(var(--muted-foreground));
         }
+
         .kit-features li::before {
-            content: "✓"; position: absolute; left: 0;
-            color: var(--accent-green); font-weight: 600;
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 10px;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: hsl(var(--foreground) / 0.3);
         }
-        
-        .kit-links { display: flex; gap: 12px; }
+
         .kit-link {
-            font-size: 0.85rem; color: var(--primary); text-decoration: none;
-            display: flex; align-items: center; gap: 4px;
+            font-size: 0.8125rem;
+            font-weight: 500;
+            color: hsl(var(--foreground));
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 6px 12px;
+            border-radius: var(--radius);
+            border: 1px solid hsl(var(--border));
+            transition: background 0.15s;
         }
-        .kit-link:hover { text-decoration: underline; }
-        
-        .usage-section { padding: 80px 0; background: var(--bg-card); }
-        .usage-section h2 { font-size: 2rem; text-align: center; margin-bottom: 48px; }
-        
-        .usage-steps { display: grid; gap: 32px; max-width: 800px; margin: 0 auto; }
-        .usage-step { display: flex; gap: 20px; }
-        
+
+        .kit-link:hover { background: hsl(var(--muted)); }
+
+        /* Usage */
+        .usage-section {
+            padding: 80px 0;
+            background: hsl(var(--muted));
+            border-top: 1px solid hsl(var(--border));
+            border-bottom: 1px solid hsl(var(--border));
+        }
+
+        .usage-section h2 {
+            font-size: 1.875rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 48px;
+            letter-spacing: -0.025em;
+        }
+
+        .usage-steps {
+            display: grid;
+            gap: 32px;
+            max-width: 720px;
+            margin: 0 auto;
+        }
+
+        .usage-step { display: flex; gap: 16px; }
+
         .step-number {
-            width: 36px; height: 36px; background: var(--primary); border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            font-weight: 600; flex-shrink: 0;
+            width: 28px; height: 28px;
+            background: hsl(var(--foreground));
+            color: hsl(var(--background));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8125rem;
+            font-weight: 600;
+            flex-shrink: 0;
         }
-        
-        .step-content h3 { font-size: 1.1rem; margin-bottom: 12px; }
-        .step-content .code-block { margin-top: 12px; }
-        
-        footer { padding: 48px 0; text-align: center; border-top: 1px solid var(--border); }
-        footer p { color: var(--text-muted); font-size: 0.9rem; }
-        footer a { color: var(--primary); text-decoration: none; }
+
+        .step-content { flex: 1; }
+        .step-content h3 { font-size: 1rem; font-weight: 600; margin-bottom: 8px; }
+        .step-content p { color: hsl(var(--muted-foreground)); font-size: 0.875rem; }
+        .step-content .code-block { margin-top: 12px; background: hsl(var(--background)); }
+
+        /* Footer */
+        footer {
+            padding: 40px 0;
+            text-align: center;
+        }
+
+        footer p {
+            color: hsl(var(--muted-foreground));
+            font-size: 0.875rem;
+        }
+
+        footer a {
+            color: hsl(var(--foreground));
+            text-decoration: none;
+            font-weight: 500;
+        }
+
         footer a:hover { text-decoration: underline; }
-        
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            border-radius: var(--radius);
+            border: 1px solid hsl(var(--border));
+            background: hsl(var(--card));
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            transition: background 0.15s;
+            z-index: 100;
+        }
+
+        .theme-toggle:hover { background: hsl(var(--muted)); }
+
         @media (max-width: 768px) {
-            h1 { font-size: 2rem; }
+            h1 { font-size: 1.875rem; }
             .kits-grid { grid-template-columns: 1fr; }
-            header { padding: 48px 0 40px; }
+            header { padding: 64px 0 48px; }
         }
     </style>
 </head>
 <body>
+    <button class="theme-toggle" onclick="toggleTheme()" title="切换主题">🌙</button>
+
     <header>
         <div class="container">
             <img src="https://github.com/mdddj/flutter_ume/raw/master/ume_logo_256.png" alt="UME Logo" class="logo">
@@ -154,7 +333,7 @@
             <p class="tagline">Flutter 应用内调试工具平台</p>
             <div class="badges">
                 <a href="https://pub.dev/packages/flutter_ume_plus"><img src="https://img.shields.io/pub/v/flutter_ume_plus.svg" alt="pub"></a>
-                <a href="https://github.com/mdddj/flutter_ume"><img src="https://img.shields.io/github/stars/mdddj/flutter_ume?style=social" alt="stars"></a>
+                <a href="https://github.com/mdddj/flutter_ume"><img src="https://img.shields.io/github/stars/mdddj/flutter_ume?style=flat" alt="stars"></a>
                 <a href="https://github.com/mdddj/flutter_ume/blob/master/LICENSE"><img src="https://img.shields.io/github/license/mdddj/flutter_ume" alt="license"></a>
             </div>
         </div>
@@ -179,136 +358,100 @@
     <section class="kits-section">
         <div class="container">
             <h2>插件工具包</h2>
-            <p class="subtitle">为 Flutter 应用的各个方面提供强大的调试工具</p>
+            <p class="subtitle">为 Flutter 应用提供全方位的调试能力</p>
             
             <div class="kits-grid">
                 <div class="kit-card">
                     <div class="kit-header">
-                        <div class="kit-icon" style="background: linear-gradient(135deg, #ec4899, #f43f5e);">🎨</div>
+                        <div class="kit-icon">🎨</div>
                         <span class="kit-name">UI 工具包</span>
-                        <span class="kit-version">v4.3.0</span>
+                        <span class="kit-version">4.3.0</span>
                     </div>
                     <p class="kit-desc">全面的 UI 检查和调试工具，用于分析 Flutter Widget。</p>
                     <ul class="kit-features">
                         <li>Widget 信息检查器</li>
                         <li>Widget 详情检查器</li>
                         <li>颜色选择器 & 颜色吸管</li>
-                        <li>对齐标尺</li>
-                        <li>触控标记</li>
+                        <li>对齐标尺 & 触控标记</li>
                     </ul>
-                    <div class="kit-links">
-                        <a href="https://pub.dev/packages/flutter_ume_kit_ui_plus" class="kit-link">📦 pub.dev</a>
-                    </div>
+                    <a href="https://pub.dev/packages/flutter_ume_kit_ui_plus" class="kit-link">查看详情 →</a>
                 </div>
 
                 <div class="kit-card">
                     <div class="kit-header">
-                        <div class="kit-icon" style="background: linear-gradient(135deg, #22c55e, #10b981);">📝</div>
-                        <span class="kit-name">控制台工具包</span>
-                        <span class="kit-version">v4.4.0</span>
+                        <div class="kit-icon">📝</div>
+                        <span class="kit-name">控制台</span>
+                        <span class="kit-version">4.4.0</span>
                     </div>
                     <p class="kit-desc">高级控制台，支持多种 UI 样式查看 debugPrint 日志。</p>
                     <ul class="kit-features">
-                        <li>3 种 UI 样式：经典、卡片、紧凑</li>
+                        <li>3 种样式：经典、卡片、紧凑</li>
                         <li>URL 自动识别 & 点击跳转</li>
-                        <li>关键词高亮显示</li>
-                        <li>过滤 & 搜索</li>
+                        <li>关键词高亮 & 过滤搜索</li>
                         <li>分享日志</li>
                     </ul>
-                    <div class="kit-links">
-                        <a href="https://pub.dev/packages/flutter_ume_kit_console_plus" class="kit-link">📦 pub.dev</a>
-                    </div>
+                    <a href="https://pub.dev/packages/flutter_ume_kit_console_plus" class="kit-link">查看详情 →</a>
                 </div>
 
                 <div class="kit-card">
                     <div class="kit-header">
-                        <div class="kit-icon" style="background: linear-gradient(135deg, #3b82f6, #6366f1);">🌐</div>
-                        <span class="kit-name">Dio 网络工具包</span>
-                        <span class="kit-version">v4.4.0</span>
+                        <div class="kit-icon">🌐</div>
+                        <span class="kit-name">Dio 网络</span>
+                        <span class="kit-version">4.4.0</span>
                     </div>
-                    <p class="kit-desc">Dio HTTP 客户端的网络请求检查器，显示详细的请求/响应信息。</p>
+                    <p class="kit-desc">Dio HTTP 客户端的网络请求检查器。</p>
                     <ul class="kit-features">
                         <li>请求/响应检查器</li>
                         <li>请求头 & 请求体查看</li>
                         <li>响应时间追踪</li>
-                        <li>错误高亮显示</li>
-                        <li>复制 & 分享</li>
+                        <li>错误高亮 & 复制分享</li>
                     </ul>
-                    <div class="kit-links">
-                        <a href="https://pub.dev/packages/flutter_ume_kit_dio_plus" class="kit-link">📦 pub.dev</a>
-                    </div>
+                    <a href="https://pub.dev/packages/flutter_ume_kit_dio_plus" class="kit-link">查看详情 →</a>
                 </div>
 
                 <div class="kit-card">
                     <div class="kit-header">
-                        <div class="kit-icon" style="background: linear-gradient(135deg, #f97316, #eab308);">📱</div>
-                        <span class="kit-name">设备信息工具包</span>
-                        <span class="kit-version">v4.3.0</span>
+                        <div class="kit-icon">📱</div>
+                        <span class="kit-name">设备信息</span>
+                        <span class="kit-version">4.3.0</span>
                     </div>
                     <p class="kit-desc">设备信息和系统详情，用于调试平台相关问题。</p>
                     <ul class="kit-features">
                         <li>设备信息面板</li>
                         <li>CPU 信息</li>
-                        <li>系统详情</li>
-                        <li>平台检测</li>
+                        <li>系统详情 & 平台检测</li>
                     </ul>
-                    <div class="kit-links">
-                        <a href="https://pub.dev/packages/flutter_ume_kit_device_plus" class="kit-link">📦 pub.dev</a>
-                    </div>
+                    <a href="https://pub.dev/packages/flutter_ume_kit_device_plus" class="kit-link">查看详情 →</a>
                 </div>
 
                 <div class="kit-card">
                     <div class="kit-header">
-                        <div class="kit-icon" style="background: linear-gradient(135deg, #a855f7, #8b5cf6);">⚡</div>
-                        <span class="kit-name">性能工具包</span>
-                        <span class="kit-version">v4.3.0</span>
+                        <div class="kit-icon">⚡</div>
+                        <span class="kit-name">性能监控</span>
+                        <span class="kit-version">4.3.0</span>
                     </div>
                     <p class="kit-desc">性能监控工具，用于追踪内存使用和帧率。</p>
                     <ul class="kit-features">
                         <li>内存信息监控</li>
                         <li>性能浮层</li>
                         <li>FPS 追踪</li>
-                        <li>内存泄漏检测</li>
                     </ul>
-                    <div class="kit-links">
-                        <a href="https://pub.dev/packages/flutter_ume_kit_perf_plus" class="kit-link">📦 pub.dev</a>
-                    </div>
+                    <a href="https://pub.dev/packages/flutter_ume_kit_perf_plus" class="kit-link">查看详情 →</a>
                 </div>
 
                 <div class="kit-card">
                     <div class="kit-header">
-                        <div class="kit-icon" style="background: linear-gradient(135deg, #06b6d4, #0ea5e9);">💻</div>
-                        <span class="kit-name">代码查看工具包</span>
-                        <span class="kit-version">v4.3.0</span>
+                        <div class="kit-icon">💻</div>
+                        <span class="kit-name">代码查看</span>
+                        <span class="kit-version">4.3.0</span>
                     </div>
                     <p class="kit-desc">在运行中的应用内直接查看 Widget 源代码。</p>
                     <ul class="kit-features">
                         <li>源代码查看器</li>
                         <li>语法高亮</li>
-                        <li>代码导航</li>
-                        <li>分享代码片段</li>
+                        <li>代码导航 & 分享</li>
                     </ul>
-                    <div class="kit-links">
-                        <a href="https://pub.dev/packages/flutter_ume_kit_show_code_plus" class="kit-link">📦 pub.dev</a>
-                    </div>
-                </div>
-
-                <div class="kit-card">
-                    <div class="kit-header">
-                        <div class="kit-icon" style="background: linear-gradient(135deg, #64748b, #475569);">📡</div>
-                        <span class="kit-name">通道监控工具包</span>
-                        <span class="kit-version">v4.3.0</span>
-                    </div>
-                    <p class="kit-desc">监控 Flutter 与原生代码之间的平台通道通信。</p>
-                    <ul class="kit-features">
-                        <li>Method Channel 监控</li>
-                        <li>Event Channel 追踪</li>
-                        <li>消息日志</li>
-                        <li>性能指标</li>
-                    </ul>
-                    <div class="kit-links">
-                        <a href="https://pub.dev/packages/flutter_ume_kit_channel_monitor_plus" class="kit-link">📦 pub.dev</a>
-                    </div>
+                    <a href="https://pub.dev/packages/flutter_ume_kit_show_code_plus" class="kit-link">查看详情 →</a>
                 </div>
             </div>
         </div>
@@ -321,8 +464,8 @@
                 <div class="usage-step">
                     <div class="step-number">1</div>
                     <div class="step-content">
-                        <h3>在 pubspec.yaml 中添加依赖</h3>
-                        <p style="color: var(--text-muted);">将需要的包添加到 dev_dependencies 中。</p>
+                        <h3>添加依赖</h3>
+                        <p>将需要的包添加到 pubspec.yaml 的 dev_dependencies 中。</p>
                     </div>
                 </div>
                 
@@ -331,21 +474,16 @@
                     <div class="step-content">
                         <h3>导入并注册插件</h3>
                         <div class="code-block">
-<pre><span class="comment">// main.dart</span>
-import 'package:flutter_ume_plus/flutter_ume_plus.dart';
+<pre>import 'package:flutter_ume_plus/flutter_ume_plus.dart';
 import 'package:flutter_ume_kit_ui_plus/flutter_ume_kit_ui_plus.dart';
 import 'package:flutter_ume_kit_console_plus/flutter_ume_kit_console_plus.dart';
-import 'package:flutter_ume_kit_dio_plus/flutter_ume_kit_dio_plus.dart';
 
 void main() {
   if (kDebugMode) {
     PluginManager.instance
       ..register(WidgetInfoInspector())
       ..register(WidgetDetailInspector())
-      ..register(ColorPicker())
-      ..register(AlignRuler())
-      ..register(Console())
-      ..register(DioInspector(dio: dio));
+      ..register(Console());
     runApp(UMEWidget(child: MyApp(), enable: true));
   } else {
     runApp(MyApp());
@@ -359,7 +497,7 @@ void main() {
                     <div class="step-number">3</div>
                     <div class="step-content">
                         <h3>运行应用</h3>
-                        <p style="color: var(--text-muted);">屏幕上会出现一个浮动调试按钮，点击即可访问所有已注册的调试工具。</p>
+                        <p>屏幕上会出现一个浮动调试按钮，点击即可访问所有已注册的调试工具。</p>
                     </div>
                 </div>
             </div>
@@ -369,11 +507,27 @@ void main() {
     <footer>
         <div class="container">
             <p>
-                由 <a href="https://github.com/mdddj">mdddj</a> 用 ❤️ 制作 · 
+                由 <a href="https://github.com/mdddj">mdddj</a> 维护 · 
                 Fork 自 <a href="https://github.com/bytedance/flutter_ume">字节跳动 Flutter UME</a> · 
                 <a href="https://github.com/mdddj/flutter_ume">GitHub</a>
             </p>
         </div>
     </footer>
+
+    <script>
+        function toggleTheme() {
+            document.body.classList.toggle('dark');
+            const btn = document.querySelector('.theme-toggle');
+            btn.textContent = document.body.classList.contains('dark') ? '☀️' : '🌙';
+            localStorage.setItem('theme', document.body.classList.contains('dark') ? 'dark' : 'light');
+        }
+
+        // 初始化主题
+        if (localStorage.getItem('theme') === 'dark' || 
+            (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.body.classList.add('dark');
+            document.querySelector('.theme-toggle').textContent = '☀️';
+        }
+    </script>
 </body>
 </html>
