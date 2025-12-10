@@ -1,3 +1,11 @@
+## 4.4.0
+
+- 新增三种 UI 样式切换：Classic（经典）、Card（卡片）、Compact（紧凑）
+- LogTextViewer 组件优化：修复 TapGestureRecognizer 内存泄漏
+- 新增 URL 自动识别和点击跳转
+- 新增关键词高亮（error/warning/success/info）
+- 修复 clearLog 后 UI 不实时更新的问题
+- 样式选择自动保存
 
 ## 4.2.2
 

@@ -10,6 +10,8 @@ import 'package:flutter_ume_plus/flutter_ume_plus.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:tuple/tuple.dart';
 
+import 'widget/log_text_viewer.dart';
+
 part 'console/console_manager.dart';
 part 'console/console_panel.dart';
 part 'console/icon.dart';

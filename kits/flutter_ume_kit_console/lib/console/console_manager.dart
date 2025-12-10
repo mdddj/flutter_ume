@@ -7,7 +7,13 @@ class ConsoleManager {
 
   static Queue<Tuple2<DateTime, String>> get logData => _logData;
 
+  static StreamController? _streamController;
+
   static StreamController get streamController {
+    if (_streamController != null && !_streamController!.isClosed) {
+      return _streamController!;
+    }
+
     final logStreamController = StreamController.broadcast();
     var transformer =
         StreamTransformer<dynamic, Tuple2<DateTime, String>>.fromHandlers(
@@ -27,7 +33,9 @@ class ConsoleManager {
         _logData.removeLast();
       }
     });
-    return logStreamController;
+
+    _streamController = logStreamController;
+    return _streamController!;
   }
 
   static DebugPrintCallback? _originalDebugPrint;

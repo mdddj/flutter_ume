@@ -8,6 +8,7 @@ class Console extends StatefulWidget implements PluggableWithStream {
   final TextStyle? timeTextStyle;
   final TextStyle? bodyTextStyle;
   final ConsoleMessageCustomBuilder? builder;
+
   Console(
       {super.key,
       this.fontSize,
@@ -42,12 +43,19 @@ class Console extends StatefulWidget implements PluggableWithStream {
   StreamFilter get streamFilter => (e) => true;
 }
 
+enum ConsoleUIStyle {
+  classic, // 经典样式
+  card, // 卡片样式
+  compact, // 紧凑样式
+}
+
 class ConsoleState extends State<Console>
     with WidgetsBindingObserver, StoreMixin {
   List<Tuple2<DateTime, String>> _logList = <Tuple2<DateTime, String>>[];
   StreamSubscription? _subscription;
   ScrollController? _controller;
   ShowDateTimeStyle? _showDateTimeStyle;
+  ConsoleUIStyle _uiStyle = ConsoleUIStyle.classic;
   bool _showFilter = false;
   RegExp? _filterExp;
 
@@ -72,6 +80,17 @@ class ConsoleState extends State<Console>
         _showDateTimeStyle = ShowDateTimeStyle.datetime;
         await storeWithKey(
             'console_panel_datetime_style', idByStyle(_showDateTimeStyle!));
+      }
+      setState(() {});
+    });
+    fetchWithKey('console_panel_ui_style').then((value) async {
+      if (value != null &&
+          value is int &&
+          value < ConsoleUIStyle.values.length) {
+        _uiStyle = ConsoleUIStyle.values[value];
+      } else {
+        _uiStyle = ConsoleUIStyle.classic;
+        await storeWithKey('console_panel_ui_style', _uiStyle.index);
       }
       setState(() {});
     });
@@ -146,6 +165,9 @@ class ConsoleState extends State<Console>
             ListView.builder(
               controller: _controller,
               itemCount: _logList.length,
+              padding: _uiStyle == ConsoleUIStyle.card
+                  ? const EdgeInsets.all(8)
+                  : EdgeInsets.zero,
               itemBuilder: (BuildContext context, int index) {
                 final dateString = _dateTimeString(index);
                 final message = _logList[_logList.length - index - 1].item2;
@@ -153,32 +175,7 @@ class ConsoleState extends State<Console>
                   return widget.builder!
                       .call(dateString, message, index, _logList);
                 }
-                return Padding(
-                  padding: const EdgeInsets.only(
-                      left: 8, right: 8, top: 3, bottom: 3),
-                  child: RichText(
-                    text: TextSpan(children: [
-                      TextSpan(
-                          text: dateString,
-                          style: widget.timeTextStyle ??
-                              TextStyle(
-                                color: Colors.white60,
-                                fontFamily: 'Courier',
-                                fontSize: _fontSize,
-                                fontWeight: FontWeight.w400,
-                              )),
-                      TextSpan(
-                          text: message,
-                          style: widget.bodyTextStyle ??
-                              TextStyle(
-                                color: Colors.white,
-                                fontFamily: 'Courier',
-                                fontSize: _fontSize,
-                                fontWeight: FontWeight.w400,
-                              )),
-                    ]),
-                  ),
-                );
+                return _buildLogItem(dateString, message, index);
               },
             ),
             if (_showFilter)
@@ -219,7 +216,14 @@ class ConsoleState extends State<Console>
           ])),
       toolbarActions: [
         Tuple3(
-            'Style',
+            _uiStyleName,
+            const Icon(
+              Icons.style,
+              size: 20,
+            ),
+            _triggerUIStyle),
+        Tuple3(
+            'Time',
             const Icon(
               Icons.access_time,
               size: 20,
@@ -250,11 +254,155 @@ class ConsoleState extends State<Console>
     );
   }
 
+  Widget _buildLogItem(String dateString, String message, int index) {
+    switch (_uiStyle) {
+      case ConsoleUIStyle.card:
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 8),
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.grey.shade900,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.grey.shade700),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                if (dateString.isNotEmpty)
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade800,
+                      borderRadius:
+                          const BorderRadius.vertical(top: Radius.circular(7)),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.access_time,
+                            size: 12, color: Colors.grey.shade400),
+                        const SizedBox(width: 6),
+                        Text(
+                          dateString,
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: Colors.grey.shade400,
+                            fontFamily: 'Courier',
+                          ),
+                        ),
+                        const Spacer(),
+                        Text(
+                          '#${_logList.length - index}',
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: Colors.grey.shade500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: LogTextViewer(
+                    logText: message,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontFamily: 'Courier',
+                      fontSize: _fontSize - 2,
+                      height: 1.4,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+
+      case ConsoleUIStyle.compact:
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 1),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (dateString.isNotEmpty)
+                Text(
+                  dateString.substring(dateString.length > 12 ? 11 : 0,
+                      dateString.length > 19 ? 19 : dateString.length),
+                  style: TextStyle(
+                    color: Colors.grey.shade600,
+                    fontFamily: 'Courier',
+                    fontSize: _fontSize - 3,
+                  ),
+                ),
+              if (dateString.isNotEmpty) const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  message,
+                  style: TextStyle(
+                    color: Colors.white70,
+                    fontFamily: 'Courier',
+                    fontSize: _fontSize - 2,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+        );
+
+      case ConsoleUIStyle.classic:
+        return Padding(
+          padding: const EdgeInsets.only(left: 8, right: 8, top: 3, bottom: 3),
+          child: RichText(
+            text: TextSpan(children: [
+              TextSpan(
+                  text: dateString,
+                  style: widget.timeTextStyle ??
+                      TextStyle(
+                        color: Colors.white60,
+                        fontFamily: 'Courier',
+                        fontSize: _fontSize,
+                        fontWeight: FontWeight.w400,
+                      )),
+              TextSpan(
+                  text: message,
+                  style: widget.bodyTextStyle ??
+                      TextStyle(
+                        color: Colors.white,
+                        fontFamily: 'Courier',
+                        fontSize: _fontSize,
+                        fontWeight: FontWeight.w400,
+                      )),
+            ]),
+          ),
+        );
+    }
+  }
+
   void _triggerShowDate() async {
     _showDateTimeStyle = styleById((idByStyle(_showDateTimeStyle!) + 1) % 4);
     await storeWithKey(
         'console_panel_datetime_style', idByStyle(_showDateTimeStyle!));
     setState(() {});
+  }
+
+  void _triggerUIStyle() async {
+    _uiStyle = ConsoleUIStyle
+        .values[(_uiStyle.index + 1) % ConsoleUIStyle.values.length];
+    await storeWithKey('console_panel_ui_style', _uiStyle.index);
+    setState(() {});
+  }
+
+  String get _uiStyleName {
+    switch (_uiStyle) {
+      case ConsoleUIStyle.classic:
+        return 'Classic';
+      case ConsoleUIStyle.card:
+        return 'Card';
+      case ConsoleUIStyle.compact:
+        return 'Compact';
+    }
   }
 
   void _triggerFilter() {
@@ -272,6 +420,6 @@ class ConsoleState extends State<Console>
       return;
     }
     final l = _logList.map((e) => '${e.item1.toString()} ${e.item2}').toList();
-     Share.share(l.join('\n'));
+    SharePlus.instance.share(ShareParams(text: l.join("\n")));
   }
 }
