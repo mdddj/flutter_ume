@@ -1,6 +1,6 @@
 name: flutter_ume_kit_dio_plus
 description: Dio kit for flutter_ume.
-version: 4.5.0
+version: 4.5.2
 homepage: https://github.com/mdddj/flutter_ume
 repository: https://github.com/mdddj/flutter_ume
 
@@ -10,7 +10,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  flutter_ume_plus: ^4.3.0
+  flutter_ume_plus: ^4.4.2
   dio: ^5.9.0
   freezed_annotation: ^3.1.0
   json_serializable: ^6.11.1

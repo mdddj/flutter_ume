@@ -1,4 +1,5 @@
-import 'dart:js' as js;
+import 'dart:js_interop';
+import 'dart:js_interop_unsafe';
 
 import 'package:flutter/material.dart';
 
@@ -20,7 +21,7 @@ class EyedropperButton extends StatelessWidget {
   final ValueChanged<Color>? onColorChanged;
 
   /// verify if the button is in a CanvasKit context
-  bool get eyedropEnabled => js.context['flutterCanvasKit'] != null;
+  bool get eyedropEnabled => globalContext.has('flutterCanvasKit');
 
   const EyedropperButton({
     required this.onColor,

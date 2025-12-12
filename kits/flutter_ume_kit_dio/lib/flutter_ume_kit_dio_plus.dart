@@ -1,4 +1,4 @@
-library flutter_ume_kit_dio;
+library;
 
 import 'package:flutter/material.dart';
 

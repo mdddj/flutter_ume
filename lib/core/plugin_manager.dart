@@ -1,4 +1,5 @@
 part of '../flutter_ume_plus.dart';
+
 class PluginManager {
   static PluginManager? _instance;
 
@@ -8,6 +9,7 @@ class PluginManager {
 
   Pluggable? _activatedPluggable;
   String? get activatedPluggableName => _activatedPluggable?.name;
+  Pluggable? get activatedPluggable => _activatedPluggable;
 
   static PluginManager get instance {
     _instance ??= PluginManager._();

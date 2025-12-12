@@ -11,45 +11,47 @@ analyzer:
     - "**/*.freezed.dart"
   plugins:
     - custom_lint
+    
 linter:
   rules:
-    - camel_case_types
-    - camel_case_extensions
-    - library_names
-    - file_names
-    - library_prefixes
-    - curly_braces_in_flow_control_structures
-    - non_constant_identifier_names
-    - constant_identifier_names
-    - directives_ordering
-    - slash_for_doc_comments
-    - implementation_imports
-    - avoid_relative_lib_imports
-    - prefer_relative_imports
-    - prefer_adjacent_string_concatenation
-    - unnecessary_brace_in_string_interps # avoid
-    - prefer_iterable_whereType
-    - unnecessary_lambdas
-    - avoid_init_to_null
-    - unnecessary_this
-    - prefer_initializing_formals
-    - type_init_formals
-    - empty_constructor_bodies
-    - unnecessary_new
-    - unnecessary_const
-    - avoid_catching_errors
-    - use_rethrow_when_possible
-    - prefer_interpolation_to_compose_strings
-    - prefer_collection_literals
-    - prefer_function_declarations_over_variables
-    - use_to_and_as_if_applicable
-    - prefer_final_fields
-    - avoid_private_typedef_functions
-    - hash_and_equals
-    - avoid_null_checks_in_equality_operators
-    - prefer_mixin
-    - type_annotate_public_apis
-    - prefer_generic_function_type_aliases
+    library_private_types_in_public_api: false
+    camel_case_types: true
+    camel_case_extensions: true
+    library_names: true
+    file_names: true
+    library_prefixes: true
+    curly_braces_in_flow_control_structures: true
+    non_constant_identifier_names: true
+    constant_identifier_names: true
+    directives_ordering: true
+    slash_for_doc_comments: true
+    implementation_imports: true
+    avoid_relative_lib_imports: true
+    prefer_relative_imports: true
+    prefer_adjacent_string_concatenation: true
+    unnecessary_brace_in_string_interps: true
+    prefer_iterable_whereType: true
+    unnecessary_lambdas: true
+    avoid_init_to_null: true
+    unnecessary_this: true
+    prefer_initializing_formals: true
+    type_init_formals: true
+    empty_constructor_bodies: true
+    unnecessary_new: true
+    unnecessary_const: true
+    avoid_catching_errors: true
+    use_rethrow_when_possible: true
+    prefer_interpolation_to_compose_strings: true
+    prefer_collection_literals: true
+    prefer_function_declarations_over_variables: true
+    use_to_and_as_if_applicable: true
+    prefer_final_fields: true
+    avoid_private_typedef_functions: true
+    hash_and_equals: true
+    avoid_null_checks_in_equality_operators: true
+    prefer_mixin: true
+    type_annotate_public_apis: true
+    prefer_generic_function_type_aliases: true
 
 dart_code_metrics:
   anti-patterns:
@@ -69,3 +71,6 @@ dart_code_metrics:
     - prefer-trailing-comma
     - prefer-conditional-expressions
     - no-equal-then-else
+
+
+

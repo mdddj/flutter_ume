@@ -1,4 +1,5 @@
 part of '../../flutter_ume_kit_channel_monitor_plus.dart';
+
 // 在 _DefaultBinaryMessenger 的基础上增加数据监控
 class UmeBinaryMessenger extends BinaryMessenger {
   static UmeBinaryMessenger binaryMessenger = UmeBinaryMessenger._();
@@ -24,15 +25,7 @@ class UmeBinaryMessenger extends BinaryMessenger {
   Future<ByteData?>? send(String channel, ByteData? message) {
     DateTime now = DateTime.now();
     final Completer<ByteData?> completer = Completer<ByteData?>();
-    // ui.PlatformDispatcher.instance is accessed directly instead of using
-    // ServicesBinding.instance.platformDispatcher because this method might be
-    // invoked before any binding is initialized. This issue was reported in
-    // #27541. It is not ideal to statically access
-    // ui.PlatformDispatcher.instance because the PlatformDispatcher may be
-    // dependency injected elsewhere with a different instance. However, static
-    // access at this location seems to be the least bad option.
-    // TODO(ianh): Use ServicesBinding.instance once we have better diagnostics
-    // on that getter.
+
     ui.PlatformDispatcher.instance.sendPlatformMessage(channel, message,
         (ByteData? reply) {
       try {

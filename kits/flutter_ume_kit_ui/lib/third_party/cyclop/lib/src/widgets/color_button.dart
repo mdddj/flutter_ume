@@ -175,7 +175,7 @@ class _ColorButtonState extends State<ColorButton> with WidgetsBindingObserver {
         _onEyePick(value);
       }, null);
     } catch (err) {
-      print('ERROR !!! _buildPickerOverlay $err');
+      debugPrint('ERROR !!! _buildPickerOverlay $err');
     }
   }
 

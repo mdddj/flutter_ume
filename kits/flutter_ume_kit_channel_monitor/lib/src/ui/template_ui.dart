@@ -1,4 +1,5 @@
 part of '../../flutter_ume_kit_channel_monitor_plus.dart';
+
 class TemplatePageWidget extends StatelessWidget {
   final String title;
   final Widget body;
@@ -53,7 +54,7 @@ class TemplatePageWidget extends StatelessWidget {
     return Expanded(
       child: DecoratedBox(
           decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.95),
+              color: Colors.white.withValues(alpha: .95),
               borderRadius: BorderRadius.circular(12)),
           child: body),
     );
@@ -68,7 +69,8 @@ class TemplatePageWidget extends StatelessWidget {
 class TemplateItemWidget extends StatelessWidget {
   final String title;
   final VoidCallback onTap;
-  const TemplateItemWidget({super.key, required this.title, required this.onTap});
+  const TemplateItemWidget(
+      {super.key, required this.title, required this.onTap});
 
   @override
   Widget build(BuildContext context) {

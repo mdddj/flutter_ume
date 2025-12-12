@@ -1,14 +1,11 @@
-part of flutter_ume_kit_perf_plus;
+part of '../../flutter_ume_kit_perf_plus.dart';
 
 class MemoryInfoPage extends StatelessWidget implements Pluggable {
-  const MemoryInfoPage({Key? key}) : super(key: key);
+  const MemoryInfoPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      theme: ThemeData(primaryColor: Colors.white),
-      home: _MemoryWidget(),
-    );
+    return FloatingWidget(contentWidget: _MemoryWidget());
   }
 
   @override
@@ -36,7 +33,7 @@ class _DetailModel {
 }
 
 class _MemoryWidget extends StatefulWidget {
-  _MemoryWidget({Key? key}) : super(key: key);
+  const _MemoryWidget();
 
   @override
   _MemoryWidgetState createState() => _MemoryWidgetState();
@@ -44,250 +41,246 @@ class _MemoryWidget extends StatefulWidget {
 
 class _MemoryWidgetState extends State<_MemoryWidget> {
   final MemoryService _memoryservice = MemoryService();
-
   int _sortColumnIndex = 0;
-
-  bool? _checked = true;
+  bool _checked = true;
+  _DetailModel? _selectedDetail;
 
   @override
   void initState() {
     super.initState();
-    _memoryservice.getInfos(() {
-      setState(() {});
-    });
+    _memoryservice.getInfos(() => setState(() {}));
   }
 
   void _hidePrivateClass(bool? check) {
-    _checked = check;
-    _memoryservice.hidePrivateClasses(check!);
+    _checked = check ?? true;
+    _memoryservice.hidePrivateClasses(_checked);
     setState(() {});
   }
 
   void _enterDetailPage(_DetailModel detail) {
-    Navigator.of(context).push(MaterialPageRoute(builder: (ctx) {
-      return Scaffold(
-          body: _MemoryDetail(detail: detail, service: _memoryservice),
-          appBar: PreferredSize(
-              preferredSize: Size.fromHeight(44),
-              child: AppBar(elevation: 0.0, title: Text(detail.className!))));
-    }));
+    setState(() => _selectedDetail = detail);
   }
 
-  Widget _header() {
-    return Column(mainAxisSize: MainAxisSize.min, children: [
-      Container(
-          alignment: Alignment.centerLeft,
-          padding: const EdgeInsets.only(left: 15, top: 10, bottom: 10),
-          child: Text("VM Info: ",
-              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
-              textAlign: TextAlign.left)),
-      Container(
-          alignment: Alignment.centerLeft,
-          padding: const EdgeInsets.only(left: 15, right: 5),
-          child: Text(_memoryservice.vmInfo)),
-      Container(
-          alignment: Alignment.centerLeft,
-          padding: const EdgeInsets.only(left: 15, bottom: 10),
-          child: Text("Memory Info: ",
-              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
-              textAlign: TextAlign.left)),
-      Container(
-          alignment: Alignment.centerLeft,
-          padding: const EdgeInsets.only(left: 15, right: 5),
-          child: Text(_memoryservice.memoryUseage)),
-      Padding(
-        padding: const EdgeInsets.only(left: 12.0),
-        child: Row(children: [
-          SizedBox(
-              height: 24,
-              width: 24,
-              child: Checkbox(
-                  materialTapTargetSize: MaterialTapTargetSize.padded,
-                  value: _checked,
-                  onChanged: _hidePrivateClass)),
-          Padding(
-              padding: EdgeInsets.only(left: 5),
-              child: Text("Hide private class"))
-        ]),
-      ),
-      Padding(padding: EdgeInsets.only(top: 10))
-    ]);
+  void _goBack() {
+    setState(() => _selectedDetail = null);
   }
 
   @override
   Widget build(BuildContext context) {
+    if (_selectedDetail != null) {
+      return _buildDetailView();
+    }
+    return Scaffold(
+      backgroundColor: const Color(0xFFF5F5F5),
+      body: CustomScrollView(
+        slivers: [
+          SliverToBoxAdapter(child: _buildHeader()),
+          SliverToBoxAdapter(child: _buildTableHeader()),
+          _buildSliverList(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDetailView() {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF5F5F5),
+      appBar: AppBar(
+        elevation: 0,
+        backgroundColor: const Color(0xFF2196F3),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: _goBack,
+        ),
+        title: Text(_selectedDetail!.className ?? '',
+            style: const TextStyle(fontSize: 16)),
+      ),
+      body: _MemoryDetail(detail: _selectedDetail!, service: _memoryservice),
+    );
+  }
+
+  Widget _buildHeader() {
     return Container(
-      color: Colors.white,
-      child: SafeArea(
-        bottom: false,
-        child: Scaffold(
-          body: NestedScrollView(
-            headerSliverBuilder:
-                (BuildContext context, bool innerBoxIsScrolled) {
-              return <Widget>[
-                SliverAppBar(
-                  bottom: PreferredSize(
-                      preferredSize: Size.fromHeight(44),
-                      child: _PerRow(customColor: Color(0xFFF4F4F4), widgets: [
-                        _DropButton(
-                            title: "Size",
-                            index: 0,
-                            stateChanged: (index, descending) => _memoryservice
-                                    .sort((d) => d.accumulatedSize, descending,
-                                        () {
-                                  setState(() {
-                                    _sortColumnIndex = index;
-                                  });
-                                }),
-                            showArrow: _sortColumnIndex == 0),
-                        _DropButton(
-                            title: "Count",
-                            index: 1,
-                            stateChanged: (index, descending) =>
-                                _memoryservice.sort(
-                                    (d) => d.instancesAccumulated, descending,
-                                    () {
-                                  setState(() {
-                                    _sortColumnIndex = index;
-                                  });
-                                }),
-                            showArrow: _sortColumnIndex == 1),
-                        _DropButton(title: "ClassName")
-                      ])),
-                  expandedHeight: 310.0,
-                  floating: true,
-                  pinned: true,
-                  flexibleSpace: FlexibleSpaceBar(background: _header()),
-                )
-              ];
-            },
-            body: Scrollbar(
-              child: ListView.builder(
-                  physics: BouncingScrollPhysics(),
-                  itemBuilder: (_, index) {
-                    var stats = _memoryservice.infoList[index];
-                    return GestureDetector(
-                      behavior: HitTestBehavior.opaque,
-                      onTap: () {
-                        _DetailModel detail = _DetailModel(
-                            stats.instancesAccumulated,
-                            stats.classRef!.id,
-                            stats.classRef!.name);
-                        _enterDetailPage(detail);
-                      },
-                      child: _PerRow(
-                        darkColor: index % 2 == 0,
-                        widgets: [
-                          Text(
-                              _memoryservice.byteToString(stats.accumulatedSize!),
-                              style: TextStyle(color: Colors.black87)),
-                          Text("${stats.instancesAccumulated}",
-                              style: TextStyle(color: Colors.black87)),
-                          Text("${stats.classRef!.name}",
-                              style: TextStyle(color: Colors.black87)),
-                        ],
-                      ),
-                    );
-                  },
-                  itemCount: _memoryservice.infoList.length),
+      margin: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+              color: Colors.black.withValues(alpha: .05),
+              blurRadius: 10,
+              offset: const Offset(0, 2)),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildInfoSection('VM Info', _memoryservice.vmInfo, Icons.memory),
+          const SizedBox(height: 12),
+          _buildInfoSection(
+              'Memory', _memoryservice.memoryUseage, Icons.pie_chart),
+          const SizedBox(height: 12),
+          InkWell(
+            onTap: () => _hidePrivateClass(!_checked),
+            child: Row(
+              children: [
+                SizedBox(
+                  height: 20,
+                  width: 20,
+                  child: Checkbox(
+                    value: _checked,
+                    onChanged: _hidePrivateClass,
+                    activeColor: const Color(0xFF2196F3),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                const Text('Hide private class',
+                    style: TextStyle(fontSize: 13, color: Color(0xFF666666))),
+              ],
             ),
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoSection(String title, String content, IconData icon) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, size: 18, color: const Color(0xFF2196F3)),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(title,
+                  style:
+                      const TextStyle(fontSize: 12, color: Color(0xFF999999))),
+              const SizedBox(height: 2),
+              Text(content,
+                  style:
+                      const TextStyle(fontSize: 13, color: Color(0xFF333333))),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTableHeader() {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      decoration: const BoxDecoration(
+        color: Color(0xFF2196F3),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
+      ),
+      child: Row(
+        children: [
+          _buildSortButton('Size', 0),
+          _buildSortButton('Count', 1),
+          const Expanded(
+              flex: 2,
+              child: Text('Class',
+                  style: TextStyle(
+                      color: Colors.white, fontWeight: FontWeight.w600))),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSortButton(String title, int index) {
+    final isSelected = _sortColumnIndex == index;
+    return Expanded(
+      child: GestureDetector(
+        onTap: () {
+          _memoryservice.sort(
+            index == 0
+                ? (d) => d.accumulatedSize
+                : (d) => d.instancesAccumulated,
+            true,
+            () => setState(() => _sortColumnIndex = index),
+          );
+        },
+        child: Row(
+          children: [
+            Text(title,
+                style: const TextStyle(
+                    color: Colors.white, fontWeight: FontWeight.w600)),
+            if (isSelected)
+              const Icon(Icons.arrow_drop_down, color: Colors.white, size: 20),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSliverList() {
+    return SliverPadding(
+      padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+      sliver: SliverList(
+        delegate: SliverChildBuilderDelegate(
+          (_, index) {
+            final stats = _memoryservice.infoList[index];
+            final isLast = index == _memoryservice.infoList.length - 1;
+            return Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: isLast
+                    ? const BorderRadius.vertical(bottom: Radius.circular(12))
+                    : null,
+              ),
+              child: Column(
+                children: [
+                  InkWell(
+                    onTap: () => _enterDetailPage(_DetailModel(
+                      stats.instancesAccumulated,
+                      stats.classRef!.id,
+                      stats.classRef!.name,
+                    )),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 12),
+                      child: Row(
+                        children: [
+                          Expanded(
+                              child: Text(
+                                  _memoryservice
+                                      .byteToString(stats.accumulatedSize!),
+                                  style: const TextStyle(fontSize: 13))),
+                          Expanded(
+                              child: Text('${stats.instancesAccumulated}',
+                                  style: const TextStyle(fontSize: 13))),
+                          Expanded(
+                              flex: 2,
+                              child: Text('${stats.classRef!.name}',
+                                  style: const TextStyle(fontSize: 13),
+                                  overflow: TextOverflow.ellipsis)),
+                          const Icon(Icons.chevron_right,
+                              size: 18, color: Color(0xFFCCCCCC)),
+                        ],
+                      ),
+                    ),
+                  ),
+                  if (!isLast)
+                    const Divider(height: 1, indent: 16, endIndent: 16),
+                ],
+              ),
+            );
+          },
+          childCount: _memoryservice.infoList.length,
         ),
       ),
     );
   }
 }
 
-typedef _DropState = void Function(int, bool);
-
-class _DropButton extends StatefulWidget {
-  _DropButton(
-      {Key? key,
-      this.showArrow = false,
-      this.descending = true,
-      required this.title,
-      this.index = 0,
-      this.stateChanged})
-      : super(key: key);
-
-  final bool showArrow;
-  final bool descending;
-  final int index;
-  final String title;
-  final _DropState? stateChanged;
-
-  @override
-  __DropButtonState createState() => __DropButtonState();
-}
-
-class __DropButtonState extends State<_DropButton> {
-  bool _descending = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _descending = widget.descending;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          if (widget.showArrow) {
-            _descending = !_descending;
-          }
-          if (widget.stateChanged != null) {
-            widget.stateChanged!(widget.index, _descending);
-          }
-        });
-      },
-      child: Row(mainAxisSize: MainAxisSize.min, children: [
-              Text(widget.title,
-        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-              widget.showArrow
-        ? Icon(_descending ? Icons.arrow_drop_down : Icons.arrow_drop_up)
-        : Container()
-            ]),
-    );
-  }
-}
-
-class _PerRow extends StatelessWidget {
-  const _PerRow(
-      {this.widgets, this.customColor, this.darkColor = false});
-
-  final List<Widget>? widgets;
-  final bool darkColor;
-  final Color? customColor;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.only(left: 15, right: 15),
-      color: customColor ??
-          (darkColor
-              ? Colors.grey.withOpacity(0.2)
-              : Colors.grey.withOpacity(0.03)),
-      child: Row(
-          children: widgets!
-              .map((e) => Expanded(
-                  child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: Padding(
-                          padding: const EdgeInsets.only(top: 10, bottom: 10),
-                          child: e))))
-              .toList()),
-    );
-  }
-}
-
 class _MemoryDetail extends StatefulWidget {
-  _MemoryDetail({Key? key, required this.detail, required this.service})
-      : super(key: key);
+  const _MemoryDetail({required this.detail, required this.service});
 
   final _DetailModel detail;
-
   final MemoryService service;
 
   @override
@@ -295,60 +288,89 @@ class _MemoryDetail extends StatefulWidget {
 }
 
 class __MemoryDetailState extends State<_MemoryDetail> {
-  String _textInfoO = "";
-  String _textInfoT = "";
+  String _properties = '';
+  String _functions = '';
+  bool _loading = true;
 
   @override
   void initState() {
     super.initState();
-
     widget.service.getClassDetailInfo(widget.detail.classId!, (info) {
-      StringBuffer buffer = StringBuffer();
-      info?.propeties?.forEach((element) {
-        buffer.writeln(element.propertyStr);
-      });
-      _textInfoO = buffer.toString();
-      StringBuffer bf = StringBuffer();
-      info?.functions?.forEach((element) {
-        bf.writeln(element);
-      });
-      _textInfoT = bf.toString();
+      _properties = info?.propeties?.map((e) => e.propertyStr).join('\n') ?? '';
+      _functions = info?.functions?.join('\n') ?? '';
+      _loading = false;
       setState(() {});
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    if (_loading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (_properties.isEmpty && _functions.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.info_outline, size: 48, color: Colors.grey[400]),
+            const SizedBox(height: 12),
+            Text('The Object is Sentinel',
+                style: TextStyle(fontSize: 16, color: Colors.grey[600])),
+          ],
+        ),
+      );
+    }
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (_properties.isNotEmpty)
+            _buildSection('Properties', _properties, Icons.list_alt),
+          if (_functions.isNotEmpty) ...[
+            const SizedBox(height: 16),
+            _buildSection('Functions', _functions, Icons.functions),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSection(String title, String content, IconData icon) {
     return Container(
-      padding: EdgeInsets.only(top: 15, left: 15, right: 15),
-      child: _textInfoO.isEmpty && _textInfoT.isEmpty
-          ? Center(
-              child: Text('The Object is Sentinel',
-                  style: TextStyle(fontSize: 20)))
-          : SingleChildScrollView(
-              child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                    alignment: Alignment.centerLeft,
-                    padding: const EdgeInsets.only(bottom: 10),
-                    child: Text("Property: ",
-                        style: const TextStyle(
-                            fontSize: 20, fontWeight: FontWeight.w500),
-                        textAlign: TextAlign.left)),
-                Text(_textInfoO,
-                    textAlign: TextAlign.left, style: TextStyle(fontSize: 16)),
-                Container(
-                    alignment: Alignment.centerLeft,
-                    padding: const EdgeInsets.only(bottom: 10),
-                    child: Text("Function: ",
-                        style: const TextStyle(
-                            fontSize: 20, fontWeight: FontWeight.w500),
-                        textAlign: TextAlign.left)),
-                Text(_textInfoT,
-                    textAlign: TextAlign.left, style: TextStyle(fontSize: 16)),
-              ],
-            )),
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+              color: Colors.black.withValues(alpha: .05),
+              blurRadius: 10,
+              offset: const Offset(0, 2)),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, size: 18, color: const Color(0xFF2196F3)),
+              const SizedBox(width: 8),
+              Text(title,
+                  style: const TextStyle(
+                      fontSize: 16, fontWeight: FontWeight.w600)),
+            ],
+          ),
+          const Divider(height: 20),
+          Text(content,
+              style: const TextStyle(
+                  fontSize: 13, height: 1.6, fontFamily: 'monospace')),
+        ],
+      ),
     );
   }
 }

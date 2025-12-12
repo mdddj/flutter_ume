@@ -8,7 +8,7 @@ mixin StoreMixin {
     if (obj == null) {
       return;
     }
-    final savedKey = 'ume_${runtimeType.toString}_$key';
+    final savedKey = 'ume_${runtimeType.toString()}_$key';
     final SharedPreferences prefs = await _sharedPref;
     if (obj is bool) {
       await prefs.setBool(savedKey, obj);
@@ -26,7 +26,7 @@ mixin StoreMixin {
   /// Fetch a object by the [key]
   Future<dynamic> fetchWithKey(String key) async {
     final SharedPreferences prefs = await _sharedPref;
-    final savedKey = 'ume_${runtimeType.toString}_$key';
+    final savedKey = 'ume_${runtimeType.toString()}_$key';
     return prefs.get(savedKey);
   }
 }

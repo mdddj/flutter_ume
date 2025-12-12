@@ -1,0 +1,8 @@
+## 1.0.0
+
+- Initial release
+- View all SharedPreferences keys and values
+- Search/filter keys
+- Edit values (String, int, double, bool, List<String>)
+- Delete keys
+- Refresh data

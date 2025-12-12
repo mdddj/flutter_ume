@@ -1,13 +1,16 @@
-part of flutter_ume_kit_perf_plus;
+part of '../../flutter_ume_kit_perf_plus.dart';
+
 class Performance extends StatelessWidget implements Pluggable {
+  const Performance({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Container(
         alignment: Alignment.topCenter,
         margin: const EdgeInsets.only(top: 20),
         child: SizedBox(
-            child: PerformanceOverlay.allEnabled(),
-            width: MediaQuery.of(context).size.width));
+            width: MediaQuery.of(context).size.width,
+            child: PerformanceOverlay.allEnabled()));
   }
 
   @override

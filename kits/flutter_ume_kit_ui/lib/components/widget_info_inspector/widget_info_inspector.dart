@@ -19,7 +19,8 @@ class WidgetInfoInspector extends StatefulWidget implements Pluggable {
   void onTrigger() {}
 
   @override
-  ImageProvider<Object> get iconImageProvider => MemoryImage(iconBytesWithInfoInspector);
+  ImageProvider<Object> get iconImageProvider =>
+      MemoryImage(iconBytesWithInfoInspector);
 }
 
 class _WidgetInfoInspectorState extends State<WidgetInfoInspector>
@@ -27,10 +28,10 @@ class _WidgetInfoInspectorState extends State<WidgetInfoInspector>
   _WidgetInfoInspectorState()
       : selection = WidgetInspectorService.instance.selection;
 
-  final window = bindingAmbiguate(WidgetsBinding.instance)!.window;
-
   Offset? _lastPointerLocation;
-  OverlayEntry _overlayEntry = OverlayEntry(builder: (ctx) => Container());
+  OverlayEntry _overlayEntry =
+      OverlayEntry(builder: (ctx) => SizedBox.shrink());
+  Size _screenSize = Size.zero;
 
   final InspectorSelection selection;
 
@@ -48,9 +49,7 @@ class _WidgetInfoInspectorState extends State<WidgetInfoInspector>
   }
 
   void _handlePanEnd(DragEndDetails details) {
-    final Rect bounds =
-        (Offset.zero & (window.physicalSize / window.devicePixelRatio))
-            .deflate(1.0);
+    final Rect bounds = (Offset.zero & _screenSize).deflate(1.0);
     if (!bounds.contains(_lastPointerLocation!)) {
       setState(selection.clear);
     }
@@ -75,6 +74,7 @@ class _WidgetInfoInspectorState extends State<WidgetInfoInspector>
 
   @override
   Widget build(BuildContext context) {
+    _screenSize = MediaQuery.sizeOf(context);
     List<Widget> children = <Widget>[];
     GestureDetector gesture = GestureDetector(
       onTap: _handleTap,
@@ -82,9 +82,8 @@ class _WidgetInfoInspectorState extends State<WidgetInfoInspector>
       onPanEnd: _handlePanEnd,
       behavior: HitTestBehavior.opaque,
       child: IgnorePointer(
-          child: SizedBox(
-              width: MediaQuery.of(context).size.width,
-              height: MediaQuery.of(context).size.height)),
+          child:
+              SizedBox(width: _screenSize.width, height: _screenSize.height)),
     );
     children.add(gesture);
     children.add(InspectorOverlay(selection: selection));
@@ -145,9 +144,13 @@ class _DebugPaintButtonState extends State<_DebugPaintButton> {
         child.markNeedsPaint();
         child.visitChildren(visitor);
       };
-      bindingAmbiguate(RendererBinding.instance)
-          ?.renderView
-          .visitChildren(visitor);
+      final renderViews =
+          bindingAmbiguate(RendererBinding.instance)?.renderViews;
+      if (renderViews != null) {
+        for (final renderView in renderViews) {
+          renderView.visitChildren(visitor);
+        }
+      }
     });
   }
 
@@ -162,9 +165,13 @@ class _DebugPaintButtonState extends State<_DebugPaintButton> {
         child.markNeedsPaint();
         child.visitChildren(visitor);
       };
-      bindingAmbiguate(RendererBinding.instance)
-          ?.renderView
-          .visitChildren(visitor);
+      final renderViews =
+          bindingAmbiguate(RendererBinding.instance)?.renderViews;
+      if (renderViews != null) {
+        for (final renderView in renderViews) {
+          renderView.visitChildren(visitor);
+        }
+      }
     });
   }
 }

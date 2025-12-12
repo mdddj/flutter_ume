@@ -1,4 +1,4 @@
-library flutter_ume_kit_perf_plus;
+library;
 
 import 'dart:convert';
 

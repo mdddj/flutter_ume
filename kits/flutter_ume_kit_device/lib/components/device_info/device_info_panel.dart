@@ -1,8 +1,9 @@
-part of flutter_ume_kit_device_plus;
+part of '../../flutter_ume_kit_device_plus.dart';
+
 class DeviceInfoPanel extends StatefulWidget implements Pluggable {
   final Platform platform;
 
-  const DeviceInfoPanel({this.platform = const LocalPlatform()});
+  const DeviceInfoPanel({super.key, this.platform = const LocalPlatform()});
 
   @override
   _DeviceInfoPanelState createState() => _DeviceInfoPanelState();
@@ -24,7 +25,8 @@ class DeviceInfoPanel extends StatefulWidget implements Pluggable {
 }
 
 class _DeviceInfoPanelState extends State<DeviceInfoPanel> {
-  String _content = '';
+  Map<String, dynamic> _deviceData = {};
+  bool _isLoading = true;
 
   @override
   void initState() {
@@ -33,107 +35,107 @@ class _DeviceInfoPanelState extends State<DeviceInfoPanel> {
   }
 
   void _getDeviceInfo() async {
-    DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
-    Map dataMap = {};
+    final deviceInfo = DeviceInfoPlugin();
+    Map<String, dynamic> dataMap = {};
+
     if (widget.platform.isAndroid) {
-      AndroidDeviceInfo androidDeviceInfo = await deviceInfo.androidInfo;
-      dataMap = _readAndroidBuildData(androidDeviceInfo);
+      final info = await deviceInfo.androidInfo;
+      dataMap = {
+        'Brand': info.brand,
+        'Model': info.model,
+        'Device': info.device,
+        'Android Version': info.version.release,
+        'SDK': info.version.sdkInt,
+        'Hardware': info.hardware,
+        'Manufacturer': info.manufacturer,
+        'Physical Device': info.isPhysicalDevice,
+        'Board': info.board,
+        'Display': info.display,
+        'Fingerprint': info.fingerprint,
+        'Host': info.host,
+        'ID': info.id,
+        'Product': info.product,
+        'Tags': info.tags,
+        'Type': info.type,
+        'Bootloader': info.bootloader,
+        'Security Patch': info.version.securityPatch,
+        'Base OS': info.version.baseOS,
+        'Codename': info.version.codename,
+        'Supported ABIs': info.supportedAbis.join(', '),
+      };
     } else if (widget.platform.isIOS) {
-      IosDeviceInfo iosDeviceInfo = await deviceInfo.iosInfo;
-      dataMap = _readIosDeviceInfo(iosDeviceInfo);
+      final info = await deviceInfo.iosInfo;
+      dataMap = {
+        'Name': info.name,
+        'Model': info.model,
+        'System': info.systemName,
+        'Version': info.systemVersion,
+        'Physical Device': info.isPhysicalDevice,
+        'Identifier': info.identifierForVendor,
+        'Machine': info.utsname.machine,
+        'Sysname': info.utsname.sysname,
+        'Nodename': info.utsname.nodename,
+        'Release': info.utsname.release,
+      };
     }
-    StringBuffer buffer = StringBuffer();
-    dataMap.forEach((k, v) {
-      buffer.write('$k:  $v\n');
+
+    setState(() {
+      _deviceData = dataMap;
+      _isLoading = false;
     });
-    _content = buffer.toString();
-    setState(() {});
-  }
-
-  Map<String, dynamic> _readAndroidBuildData(AndroidDeviceInfo build) {
-    return <String, dynamic>{
-      'version.securityPatch': build.version.securityPatch,
-      'version.sdkInt': build.version.sdkInt,
-      'version.release': build.version.release,
-      'version.previewSdkInt': build.version.previewSdkInt,
-      'version.incremental': build.version.incremental,
-      'version.codename': build.version.codename,
-      'version.baseOS': build.version.baseOS,
-      'board': build.board,
-      'bootloader': build.bootloader,
-      'brand': build.brand,
-      'device': build.device,
-      'display': build.display,
-      'fingerprint': build.fingerprint,
-      'hardware': build.hardware,
-      'host': build.host,
-      'id': build.id,
-      'manufacturer': build.manufacturer,
-      'model': build.model,
-      'product': build.product,
-      'supported32BitAbis': build.supported32BitAbis,
-      'supported64BitAbis': build.supported64BitAbis,
-      'supportedAbis': build.supportedAbis,
-      'tags': build.tags,
-      'type': build.type,
-      'isPhysicalDevice': build.isPhysicalDevice,
-      'androidId': 'unknown'
-    };
-  }
-
-  Map<String, dynamic> _readIosDeviceInfo(IosDeviceInfo data) {
-    return <String, dynamic>{
-      'name': data.name,
-      'systemName': data.systemName,
-      'systemVersion': data.systemVersion,
-      'model': data.model,
-      'localizedModel': data.localizedModel,
-      'identifierForVendor': data.identifierForVendor,
-      'isPhysicalDevice': data.isPhysicalDevice,
-      'utsname.sysname': data.utsname.sysname,
-      'utsname.nodename': data.utsname.nodename,
-      'utsname.release': data.utsname.release,
-      'utsname.version': data.utsname.version,
-      'utsname.machine': data.utsname.machine,
-    };
   }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(left: 12, right: 12, top: 32, bottom: 32),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12.0),
-        color: Colors.black.withOpacity(0.85),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
+    return FloatingWidget(
+      contentWidget: _isLoading
+          ? const Center(child: CircularProgressIndicator.adaptive())
+          : ListView.separated(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              itemCount: _deviceData.length,
+              separatorBuilder: (_, __) => Divider(
+                height: 1,
+                color: Colors.grey.withValues(alpha: 0.15),
+              ),
+              itemBuilder: (context, index) {
+                final key = _deviceData.keys.elementAt(index);
+                final value = _deviceData[key];
+                return _InfoRow(label: key, value: '$value');
+              },
+            ),
+    );
+  }
+}
+
+class _InfoRow extends StatelessWidget {
+  final String label;
+  final String value;
+
+  const _InfoRow({required this.label, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 10),
+      child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Container(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: Text(
-                'Device Info',
-                textScaler: TextScaler.linear(1.15),
-                style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.red),
-              )),
-          Container(
-            constraints: BoxConstraints(
-                maxHeight: MediaQuery.of(context).size.height - 150),
-            child: SingleChildScrollView(
-              physics: BouncingScrollPhysics(),
-              child: Text(_content,
-                  style: const TextStyle(
-                    fontSize: 15,
-                    color: Colors.white,
-                    fontWeight: FontWeight.w500,
-                  ),
-                  strutStyle:
-                      const StrutStyle(forceStrutHeight: true, height: 2)),
+        children: [
+          SizedBox(
+            width: 120,
+            child: Text(
+              label,
+              style: TextStyle(
+                fontSize: 13,
+                color: Colors.grey.shade600,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+          Expanded(
+            child: SelectableText(
+              value,
+              style: const TextStyle(fontSize: 13, color: Colors.black87),
+              textAlign: TextAlign.right,
             ),
           ),
         ],

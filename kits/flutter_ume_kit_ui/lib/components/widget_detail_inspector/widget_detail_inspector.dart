@@ -15,7 +15,8 @@ class WidgetDetailInspector extends StatelessWidget implements Pluggable {
   Widget buildWidget(BuildContext? context) => this;
 
   @override
-  ImageProvider<Object> get iconImageProvider => MemoryImage(iconBytesWithDetailInspector);
+  ImageProvider<Object> get iconImageProvider =>
+      MemoryImage(iconBytesWithDetailInspector);
 
   @override
   String get name => 'WidgetDetail';
@@ -37,8 +38,6 @@ class _DetailPage extends StatefulWidget {
 class _DetailPageState extends State<_DetailPage> with WidgetsBindingObserver {
   _DetailPageState() : selection = WidgetInspectorService.instance.selection;
 
-  final window = bindingAmbiguate(WidgetsBinding.instance)!.window;
-
   Offset? _lastPointerLocation;
 
   final InspectorSelection selection;
@@ -59,8 +58,9 @@ class _DetailPageState extends State<_DetailPage> with WidgetsBindingObserver {
     if (_lastPointerLocation != null) {
       _inspectAt(_lastPointerLocation);
     }
+    final nav = Navigator.of(context);
     Future.delayed(const Duration(milliseconds: 100), () {
-      Navigator.of(context).push(MaterialPageRoute(builder: (ctx) {
+      nav.push(MaterialPageRoute(builder: (ctx) {
         return _InfoPage(
             elements: selection.currentElement!.debugGetDiagnosticChain());
       }));
@@ -81,7 +81,7 @@ class _DetailPageState extends State<_DetailPage> with WidgetsBindingObserver {
       onPanDown: _handlePanDown,
       behavior: HitTestBehavior.translucent,
       child: IgnorePointer(
-        child: Container(
+        child: SizedBox(
             width: MediaQuery.of(context).size.width,
             height: MediaQuery.of(context).size.height),
       ),
@@ -109,126 +109,236 @@ class _InfoPage extends StatefulWidget {
   final List<Element> elements;
 
   @override
-  __InfoPageState createState() => __InfoPageState();
+  _InfoPageState createState() => _InfoPageState();
 }
 
-class __InfoPageState extends State<_InfoPage> {
-  List<_DetailModel> _showList = <_DetailModel>[];
-  late List<_DetailModel> _originalList;
+class _InfoPageState extends State<_InfoPage> {
+  late final List<_DetailModel> _originalList;
+  List<_DetailModel> _filteredList = [];
+  final _searchController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    for (var f in widget.elements) {
-      _showList.add(_DetailModel(f));
+    _originalList =
+        widget.elements.map(_DetailModel.new).toList(growable: false);
+    _filteredList = _originalList;
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  void _onSearchChanged(String query) {
+    final trimmed = query.trim();
+    if (trimmed.isEmpty) {
+      setState(() => _filteredList = _originalList);
+      return;
     }
-    _originalList = _showList;
-  }
-
-  Widget _dot(List<int> colors) {
-    Color randomColor = Color.fromARGB(255, colors[0], colors[1], colors[2]);
-    return Container(
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: randomColor,
-      ),
-      width: 10,
-      height: 10,
-    );
-  }
-
-  Widget _cell(_DetailModel model, BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        Navigator.of(context).push(MaterialPageRoute(builder: (ctx) {
-          return Scaffold(
-              body: _DetailContent(element: model.element),
-              appBar: PreferredSize(
-                  preferredSize: const Size.fromHeight(44),
-                  child: AppBar(elevation: 0.0, title: const Text("widget_detail"))));
-        }));
-      },
-      child: Container(
-        margin: const EdgeInsets.only(top: 6, bottom: 6, left: 12, right: 12),
-        child: Row(
-          children: [
-            Padding(
-                padding: const EdgeInsets.only(right: 12),
-                child: _dot(model.colors)),
-            Expanded(
-                child: Text(
-              model.element.widget.toStringShort(),
-              style: const TextStyle(fontSize: 15),
-            ))
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _textChange(String query) {
-    query = query.trim();
-    List<_DetailModel> infoList = [];
-    for (var model in _originalList) {
-      var regExp = RegExp(query, caseSensitive: false);
-      if (regExp.hasMatch(model.element.widget.toStringShort())) {
-        infoList.add(model);
-      }
-    }
+    final regExp = RegExp(trimmed, caseSensitive: false);
     setState(() {
-      _showList = infoList;
+      _filteredList = _originalList
+          .where((m) => regExp.hasMatch(m.element.widget.toStringShort()))
+          .toList();
     });
+  }
+
+  void _navigateToDetail(_DetailModel model) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => _DetailPage2(element: model.element),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        resizeToAvoidBottomInset: false,
-        body: Container(
-          child: Column(
-            children: <Widget>[
-              Padding(
-                padding: const EdgeInsets.only(
-                    left: 12, right: 12, top: 10, bottom: 10),
-                child: SearchBar(
-                    placeHolder: '请输入要搜索的widget', onChangeHandle: _textChange),
+      backgroundColor: Colors.grey.shade100,
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        centerTitle: false,
+        title: Row(
+          children: [
+            const Text(
+              'Build Chain',
+              style: TextStyle(
+                color: Colors.black87,
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
               ),
-              Expanded(
-                child: GestureDetector(
-                  onPanDown: (_) {
-                    FocusScope.of(context).requestFocus(FocusNode());
-                  },
-                  child: ListView.builder(
-                      physics: const BouncingScrollPhysics(),
-                      itemBuilder: (_, index) {
-                        _DetailModel model = _showList[index];
-                        return _cell(model, context);
-                      },
-                      itemCount: _showList.length),
+            ),
+            const SizedBox(width: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              decoration: BoxDecoration(
+                color: Colors.blue.shade50,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                '${widget.elements.length}',
+                style: TextStyle(
+                  color: Colors.blue.shade700,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
                 ),
+              ),
+            ),
+          ],
+        ),
+      ),
+      body: Column(
+        children: [
+          // 搜索栏
+          Container(
+            color: Colors.white,
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+            child: TextField(
+              controller: _searchController,
+              onChanged: _onSearchChanged,
+              decoration: InputDecoration(
+                hintText: '搜索 Widget...',
+                hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14),
+                prefixIcon:
+                    Icon(Icons.search, color: Colors.grey.shade400, size: 20),
+                filled: true,
+                fillColor: Colors.grey.shade100,
+                contentPadding: const EdgeInsets.symmetric(vertical: 8),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: BorderSide.none,
+                ),
+              ),
+            ),
+          ),
+          // 列表
+          Expanded(
+            child: ListView.separated(
+              padding: const EdgeInsets.all(12),
+              itemCount: _filteredList.length,
+              separatorBuilder: (_, __) => const SizedBox(height: 8),
+              itemBuilder: (_, index) {
+                final model = _filteredList[index];
+                final depth = _originalList.indexOf(model);
+                return _WidgetCard(
+                  model: model,
+                  depth: depth,
+                  onTap: () => _navigateToDetail(model),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _WidgetCard extends StatelessWidget {
+  const _WidgetCard({
+    required this.model,
+    required this.depth,
+    required this.onTap,
+  });
+
+  final _DetailModel model;
+  final int depth;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final widgetName = model.element.widget.toStringShort();
+    return Material(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(10),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(10),
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Row(
+            children: [
+              // 深度指示器
+              Container(
+                width: 28,
+                height: 28,
+                decoration: BoxDecoration(
+                  color: Color.fromARGB(
+                    40,
+                    model.colors[0],
+                    model.colors[1],
+                    model.colors[2],
+                  ),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Center(
+                  child: Text(
+                    '$depth',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: Color.fromARGB(
+                        255,
+                        model.colors[0],
+                        model.colors[1],
+                        model.colors[2],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              // Widget 名称
+              Expanded(
+                child: Text(
+                  widgetName,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              Icon(
+                Icons.chevron_right,
+                color: Colors.grey.shade400,
+                size: 20,
               ),
             ],
           ),
         ),
-        appBar: PreferredSize(
-            preferredSize: const Size.fromHeight(44),
-            child: AppBar(
-                elevation: 0.0,
-                title: RichText(
-                  text: TextSpan(
-                    text: 'widget_build_chain',
-                    style: const TextStyle(
-                        color: Colors.black,
-                        fontSize: 19,
-                        fontWeight: FontWeight.w500,
-                        fontFamily: "PingFang SC"),
-                    children: <TextSpan>[
-                      TextSpan(
-                          text: '  depth: ${widget.elements.length}',
-                          style: const TextStyle(color: Colors.black, fontSize: 11)),
-                    ],
-                  ),
-                ))));
+      ),
+    );
+  }
+}
+
+class _DetailPage2 extends StatelessWidget {
+  const _DetailPage2({required this.element});
+
+  final Element element;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.grey.shade100,
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        title: Text(
+          element.widget.toStringShort(),
+          style: const TextStyle(
+            color: Colors.black87,
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
+      body: _DetailContent(element: element),
+    );
   }
 }
 
@@ -237,66 +347,259 @@ class _DetailContent extends StatelessWidget {
 
   final Element element;
 
-  Widget _titleWidget(String title) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 12, left: 12),
-      child: Text(
-        title,
-        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
-      ),
+  @override
+  Widget build(BuildContext context) {
+    final widget = element.widget;
+    final renderObject = element.renderObject;
+
+    return ListView(
+      padding: const EdgeInsets.all(12),
+      children: [
+        // Widget 基本信息
+        _InfoCard(
+          title: 'Widget',
+          icon: Icons.widgets_outlined,
+          color: Colors.blue,
+          children: [
+            _InfoRow('Type', widget.runtimeType.toString()),
+            if (widget.key != null) _InfoRow('Key', widget.key.toString()),
+            _InfoRow('HashCode', '0x${widget.hashCode.toRadixString(16)}'),
+          ],
+        ),
+        const SizedBox(height: 12),
+
+        // RenderObject 信息
+        if (renderObject != null) ...[
+          _InfoCard(
+            title: 'RenderObject',
+            icon: Icons.layers_outlined,
+            color: Colors.orange,
+            children: [
+              _InfoRow('Type', renderObject.runtimeType.toString()),
+              if (renderObject is RenderBox && renderObject.hasSize)
+                _InfoRow(
+                  'Size',
+                  '${renderObject.size.width.toStringAsFixed(1)} × ${renderObject.size.height.toStringAsFixed(1)}',
+                ),
+              _InfoRow('Attached', renderObject.attached ? 'Yes' : 'No'),
+              _InfoRow(
+                  'Needs Paint', renderObject.debugNeedsPaint ? 'Yes' : 'No'),
+              _InfoRow(
+                  'Needs Layout', renderObject.debugNeedsLayout ? 'Yes' : 'No'),
+            ],
+          ),
+          const SizedBox(height: 12),
+        ],
+
+        // 约束信息
+        if (renderObject is RenderBox) ...[
+          _InfoCard(
+            title: 'Constraints',
+            icon: Icons.straighten_outlined,
+            color: Colors.green,
+            children: [
+              if (renderObject.hasSize) ...[
+                _InfoRow('Min Width',
+                    renderObject.constraints.minWidth.toStringAsFixed(1)),
+                _InfoRow('Max Width',
+                    renderObject.constraints.maxWidth.toStringAsFixed(1)),
+                _InfoRow('Min Height',
+                    renderObject.constraints.minHeight.toStringAsFixed(1)),
+                _InfoRow('Max Height',
+                    renderObject.constraints.maxHeight.toStringAsFixed(1)),
+              ],
+            ],
+          ),
+          const SizedBox(height: 12),
+        ],
+
+        // Widget 属性
+        _InfoCard(
+          title: 'Widget Properties',
+          icon: Icons.code_outlined,
+          color: Colors.purple,
+          expandable: true,
+          children: [
+            _CodeBlock(content: _formatWidgetProperties(widget)),
+          ],
+        ),
+        const SizedBox(height: 12),
+
+        // RenderObject 详情
+        if (renderObject != null)
+          _InfoCard(
+            title: 'RenderObject Details',
+            icon: Icons.description_outlined,
+            color: Colors.teal,
+            expandable: true,
+            children: [
+              _CodeBlock(content: renderObject.toStringDeep()),
+            ],
+          ),
+      ],
     );
   }
 
-  Future<List<String>> getInfo() async {
-    Completer<List<String>> completer = Completer();
-    String string = element.renderObject!.toStringDeep();
-    List<String> list = string.split("\n");
-    completer.complete(list);
-    return completer.future;
+  String _formatWidgetProperties(Widget widget) {
+    final description = widget.toStringDeep();
+    // 简单格式化，移除多余空行
+    return description
+        .split('\n')
+        .where((line) => line.trim().isNotEmpty)
+        .join('\n');
   }
+}
+
+class _InfoCard extends StatefulWidget {
+  const _InfoCard({
+    required this.title,
+    required this.icon,
+    required this.color,
+    required this.children,
+    this.expandable = false,
+  });
+
+  final String title;
+  final IconData icon;
+  final Color color;
+  final List<Widget> children;
+  final bool expandable;
+
+  @override
+  State<_InfoCard> createState() => _InfoCardState();
+}
+
+class _InfoCardState extends State<_InfoCard> {
+  bool _expanded = true;
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder(
-        future: getInfo(),
-        builder: (_, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
-                child: CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.red)));
-          } else if (snapshot.connectionState == ConnectionState.done) {
-            return Container(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // 标题栏
+          InkWell(
+            onTap: widget.expandable
+                ? () => setState(() => _expanded = !_expanded)
+                : null,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: Row(
                 children: [
-                  _titleWidget("Widget Description"),
                   Container(
-                      constraints: const BoxConstraints(maxHeight: 200),
-                      padding:
-                          const EdgeInsets.only(top: 12, left: 12, right: 12),
-                      child: SingleChildScrollView(
-                          child: Text(element.widget.toStringDeep()))),
-                  _titleWidget("RenderObject Description"),
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: widget.color.withValues(alpha: .1),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Icon(widget.icon, size: 16, color: widget.color),
+                  ),
+                  const SizedBox(width: 10),
                   Expanded(
-                      child: Padding(
-                          padding: const EdgeInsets.only(
-                              top: 12, right: 12, left: 12),
-                          child: ListView.builder(
-                              physics: const BouncingScrollPhysics(),
-                              itemBuilder: (_, index) {
-                                return SingleChildScrollView(
-                                    scrollDirection: Axis.horizontal,
-                                    child: Text(
-                                        (snapshot.data as List<String>)[index]));
-                              },
-                              itemCount:
-                                  (snapshot.data as List<String>).length))),
+                    child: Text(
+                      widget.title,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  if (widget.expandable)
+                    Icon(
+                      _expanded ? Icons.expand_less : Icons.expand_more,
+                      color: Colors.grey,
+                      size: 20,
+                    ),
                 ],
               ),
-            );
-          } else {
-            return Container();
-          }
-        });
+            ),
+          ),
+          // 内容
+          if (_expanded) ...[
+            const Divider(height: 1),
+            Padding(
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: widget.children,
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _InfoRow extends StatelessWidget {
+  const _InfoRow(this.label, this.value);
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 100,
+            child: Text(
+              label,
+              style: TextStyle(
+                fontSize: 13,
+                color: Colors.grey.shade600,
+              ),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              value,
+              style: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CodeBlock extends StatelessWidget {
+  const _CodeBlock({required this.content});
+
+  final String content;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade100,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: SelectableText(
+          content,
+          style: TextStyle(
+            fontSize: 11,
+            color: Colors.grey.shade800,
+            height: 1.4,
+          ),
+        ),
+      ),
+    );
   }
 }

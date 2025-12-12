@@ -2,7 +2,7 @@ part of '../../flutter_ume_kit_ui_plus.dart';
 
 class TouchIndicator extends StatelessWidget
     implements PluggableWithNestedWidget {
-  const TouchIndicator({Key? key}) : super(key: key);
+  const TouchIndicator({super.key});
 
   @override
   Widget buildWidget(BuildContext? context) => this;
@@ -17,7 +17,8 @@ class TouchIndicator extends StatelessWidget
   void onTrigger() {}
 
   @override
-  ImageProvider<Object> get iconImageProvider => MemoryImage(iconBytesWithTouchIndicator);
+  ImageProvider<Object> get iconImageProvider =>
+      MemoryImage(iconBytesWithTouchIndicator);
 
   @override
   Widget buildNestedWidget(Widget child) {
@@ -26,6 +27,6 @@ class TouchIndicator extends StatelessWidget
 
   @override
   Widget build(BuildContext context) {
-    return Container();
+    return SizedBox();
   }
 }

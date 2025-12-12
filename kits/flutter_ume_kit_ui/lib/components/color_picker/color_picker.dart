@@ -1,7 +1,7 @@
 part of '../../flutter_ume_kit_ui_plus.dart';
 
 class ColorPicker extends StatefulWidget implements PluggableWithNestedWidget {
-  const ColorPicker({Key? key}) : super(key: key);
+  const ColorPicker({super.key});
 
   @override
   _ColorPickerState createState() => _ColorPickerState();
@@ -19,7 +19,8 @@ class ColorPicker extends StatefulWidget implements PluggableWithNestedWidget {
   void onTrigger() {}
 
   @override
-  ImageProvider<Object> get iconImageProvider => MemoryImage(iconBytesWithColorPicker);
+  ImageProvider<Object> get iconImageProvider =>
+      MemoryImage(iconBytesWithColorPicker);
 
   @override
   Widget buildNestedWidget(Widget child) {
@@ -28,85 +29,165 @@ class ColorPicker extends StatefulWidget implements PluggableWithNestedWidget {
 }
 
 class _ColorPickerState extends State<ColorPicker> {
-  final colorTextStyle = const TextStyle(
-      fontFamily: "Monospace", fontWeight: FontWeight.bold, fontSize: 20);
+  static const _colorTextStyle =
+      TextStyle(fontWeight: FontWeight.bold, fontSize: 20);
 
   Color? _color;
+  bool _panelAtBottom = true;
 
-  bool _panelDown = true;
+  void _onColorSelected(Color color) {
+    setState(() => _color = color);
+  }
+
+  void _onColorChanged(Color color) {
+    // 取色过程中更新颜色和面板位置
+    final cursorY = EyeDrop.data.cursorPosition.dy;
+    final screenHeight = MediaQuery.sizeOf(context).height;
+    final shouldBeAtBottom = cursorY < screenHeight * 0.5;
+
+    setState(() {
+      _color = color;
+      if (_panelAtBottom != shouldBeAtBottom) {
+        _panelAtBottom = shouldBeAtBottom;
+      }
+    });
+  }
+
+  void _copyHexToClipboard() {
+    if (_color != null) {
+      Clipboard.setData(
+          ClipboardData(text: '#${_color!.hexRGB.toUpperCase()}'));
+    }
+  }
+
+  void _copyRgbToClipboard() {
+    if (_color != null) {
+      final r = (_color!.r * 255).round();
+      final g = (_color!.g * 255).round();
+      final b = (_color!.b * 255).round();
+      Clipboard.setData(ClipboardData(text: 'rgb($r, $g, $b)'));
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Listener(
-      onPointerDown: (downEvent) {},
-      onPointerMove: (moveEvent) {
-        setState(() => _panelDown =
-            moveEvent.position.dy < MediaQuery.of(context).size.height * 0.5);
-      },
-      child: Container(
-        width: MediaQuery.of(context).size.width,
-        height: MediaQuery.of(context).size.height,
-        color: Colors.transparent,
-        child: Align(
-            alignment:
-                _panelDown ? Alignment.bottomCenter : Alignment.topCenter,
-            child: Padding(
-              padding: const EdgeInsets.only(top: 28, bottom: 28),
-              child: Container(
-                  decoration: const ShapeDecoration(
-                    shape: StadiumBorder(),
-                    color: Colors.white,
-                    shadows: [
-                      BoxShadow(color: Colors.black54, blurRadius: 12),
-                    ],
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      CircleAvatar(
-                          radius: 40,
-                          backgroundColor: _color,
-                          child: EyedropperButton(
-                            onColor: (color) => setState(() => _color = color),
-                            onColorChanged: (color) =>
-                                setState(() => _color = color),
-                          )),
-                      GestureDetector(
-                        onTap: () {
-                          debugPrint(_color?.hexARGB.toString());
-                        },
-                        child: Padding(
-                          padding: const EdgeInsets.only(left: 8, right: 18.0),
-                          child: RichText(
-                              text: TextSpan(children: [
-                            TextSpan(
-                                text:
-                                    _color?.hexARGB.toString().substring(0, 2) ?? '👈🏻Tap to pick',
-                                style: colorTextStyle.copyWith(
-                                    color: Colors.grey)),
-                            TextSpan(
-                                text:
-                                    _color?.hexARGB.toString().substring(2, 4) ?? '',
-                                style:
-                                    colorTextStyle.copyWith(color: Colors.red)),
-                            TextSpan(
-                                text:
-                                    _color?.hexARGB.toString().substring(4, 6) ?? '',
-                                style: colorTextStyle.copyWith(
-                                    color: Colors.green)),
-                            TextSpan(
-                                text:
-                                    _color?.hexARGB.toString().substring(6, 8) ?? '',
-                                style: colorTextStyle.copyWith(
-                                    color: Colors.blue)),
-                          ])),
-                        ),
-                      )
-                    ],
-                  )),
-            )),
+    final screenSize = MediaQuery.sizeOf(context);
+
+    return SizedBox(
+      width: screenSize.width,
+      height: screenSize.height,
+      child: Stack(
+        children: [
+          // 透明层用于检测手指位置，但不阻止事件传递
+          Positioned.fill(
+            child: IgnorePointer(
+              child: Builder(
+                builder: (context) {
+                  // 使用 EyeDrop 的 hover 回调来更新面板位置
+                  return const SizedBox.shrink();
+                },
+              ),
+            ),
+          ),
+          // 面板
+          Positioned(
+            left: 0,
+            right: 0,
+            top: _panelAtBottom ? null : 48,
+            bottom: _panelAtBottom ? 48 : null,
+            child: Center(child: _buildPanel()),
+          ),
+        ],
       ),
+    );
+  }
+
+  Widget _buildPanel() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: const [BoxShadow(color: Colors.black26, blurRadius: 12)],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // 颜色预览 + 取色按钮
+          CircleAvatar(
+            radius: 32,
+            backgroundColor: _color ?? Colors.grey.shade200,
+            child: EyedropperButton(
+              onColor: _onColorSelected,
+              onColorChanged: _onColorChanged,
+            ),
+          ),
+          const SizedBox(width: 12),
+          // 颜色值显示
+          _color == null
+              ? Text(
+                  '👈 点击取色',
+                  style: _colorTextStyle.copyWith(
+                      color: Colors.grey, fontSize: 16),
+                )
+              : _buildColorInfo(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildColorInfo() {
+    final hex = _color!.hexRGB.toUpperCase();
+    final r = (_color!.r * 255).round();
+    final g = (_color!.g * 255).round();
+    final b = (_color!.b * 255).round();
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // HEX（点击复制）
+        GestureDetector(
+          onTap: _copyHexToClipboard,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                '#',
+                style:
+                    _colorTextStyle.copyWith(color: Colors.grey, fontSize: 18),
+              ),
+              Text(
+                hex.substring(0, 2),
+                style:
+                    _colorTextStyle.copyWith(color: Colors.red, fontSize: 18),
+              ),
+              Text(
+                hex.substring(2, 4),
+                style:
+                    _colorTextStyle.copyWith(color: Colors.green, fontSize: 18),
+              ),
+              Text(
+                hex.substring(4, 6),
+                style:
+                    _colorTextStyle.copyWith(color: Colors.blue, fontSize: 18),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 4),
+        // RGB（点击复制）
+        GestureDetector(
+          onTap: _copyRgbToClipboard,
+          child: Text(
+            'rgb($r, $g, $b)',
+            style: const TextStyle(
+              color: Colors.grey,
+              fontSize: 12,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

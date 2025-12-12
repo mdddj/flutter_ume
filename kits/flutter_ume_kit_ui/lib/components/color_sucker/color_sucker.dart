@@ -26,7 +26,8 @@ class ColorSucker extends StatefulWidget implements Pluggable {
   void onTrigger() {}
 
   @override
-  ImageProvider<Object> get iconImageProvider => MemoryImage(iconBytesWithColorSucker);
+  ImageProvider<Object> get iconImageProvider =>
+      MemoryImage(iconBytesWithColorSucker);
 }
 
 class _ColorSuckerState extends State<ColorSucker> {
@@ -41,13 +42,20 @@ class _ColorSuckerState extends State<ColorSucker> {
   late Size _windowSize;
   bool _excuting = false;
 
+  // 节流：记录上次更新时间，限制更新频率
+  DateTime _lastUpdate = DateTime.now();
+  static const _updateInterval = Duration(milliseconds: 16); // ~60fps
+
   @override
   void initState() {
-    _windowSize = ui.window.physicalSize / ui.window.devicePixelRatio;
+    _windowSize = WidgetsBinding
+            .instance.platformDispatcher.views.first.physicalSize /
+        WidgetsBinding.instance.platformDispatcher.views.first.devicePixelRatio;
     _magnifierSize = widget.size;
     _scale = widget.scale;
     _radius = BorderRadius.circular(_magnifierSize.longestSide);
-    _matrix = Matrix4.identity()..scale(widget.scale);
+    _matrix = Matrix4.identity()
+      ..scaleByDouble(widget.scale, widget.scale, 1.0, 1.0);
     _magnifierPosition =
         _windowSize.center(Offset.zero) - _magnifierSize.center(Offset.zero);
     super.initState();
@@ -61,20 +69,27 @@ class _ColorSuckerState extends State<ColorSucker> {
     }
     if (oldWidget.scale != widget.scale) {
       _scale = widget.scale;
-      _matrix = Matrix4.identity()..scale(_scale);
+      _matrix = Matrix4.identity()..scaleByDouble(_scale!, _scale!, 1.0, 1.0);
     }
     super.didUpdateWidget(oldWidget);
   }
 
   void _onPanUpdate(DragUpdateDetails dragDetails) {
+    // 节流：限制更新频率，避免过度重建
+    final now = DateTime.now();
+    if (now.difference(_lastUpdate) < _updateInterval) {
+      return;
+    }
+    _lastUpdate = now;
+
     _magnifierPosition =
         dragDetails.globalPosition - _magnifierSize.center(Offset.zero);
     double newX = dragDetails.globalPosition.dx;
     double newY = dragDetails.globalPosition.dy;
     final Matrix4 newMatrix = Matrix4.identity()
-      ..translate(newX, newY)
-      ..scale(_scale, _scale)
-      ..translate(-newX, -newY);
+      ..translateByDouble(newX, newY, 0.0, 1.0)
+      ..scaleByDouble(_scale!, _scale!, 1.0, 1.0)
+      ..translateByDouble(-newX, -newY, 0.0, 1.0);
     _matrix = newMatrix;
     _searchPixel(dragDetails.globalPosition);
     setState(() {});
@@ -89,11 +104,15 @@ class _ColorSuckerState extends State<ColorSucker> {
     if (_snapshot == null && _excuting == false) {
       _excuting = true;
       await _captureScreen();
+      // 截图完成后，计算当前位置的颜色
+      _searchPixel(dragDetails.globalPosition);
+      setState(() {});
     }
   }
 
   void _onPanEnd(DragEndDetails dragDetails) {
     _snapshot = null;
+    _excuting = false;
   }
 
   void _searchPixel(Offset globalPosition) {
@@ -104,7 +123,8 @@ class _ColorSuckerState extends State<ColorSucker> {
     try {
       RenderRepaintBoundary boundary =
           rootKey.currentContext!.findRenderObject() as RenderRepaintBoundary;
-      ui.Image image = await boundary.toImage();
+      // 使用 pixelRatio: 1.0 确保截图坐标与逻辑坐标一致
+      ui.Image image = await boundary.toImage(pixelRatio: 1.0);
       ByteData? byteData =
           await image.toByteData(format: ui.ImageByteFormat.png);
       if (byteData == null) {
@@ -121,17 +141,19 @@ class _ColorSuckerState extends State<ColorSucker> {
 
   void _calculatePixel(Offset globalPosition) {
     if (_snapshot == null) return;
-    double px = globalPosition.dx;
-    double py = globalPosition.dy;
-    int pixel32 = _snapshot!.getPixelIndex(px.toInt(), py.toInt());
-    int hex = _abgrToArgb(pixel32);
-    _currentColor = Color(hex);
-  }
-
-  int _abgrToArgb(int argbColor) {
-    int r = (argbColor >> 16) & 0xFF;
-    int b = argbColor & 0xFF;
-    return (argbColor & 0xFF00FF00) | (b << 16) | r;
+    int px = globalPosition.dx.toInt();
+    int py = globalPosition.dy.toInt();
+    if (px < 0 || py < 0 || px >= _snapshot!.width || py >= _snapshot!.height) {
+      return;
+    }
+    final pixel = _snapshot!.getPixel(px, py);
+    // image 库返回 16 位值 (0-65535)，需要右移 8 位转换为 8 位 (0-255)
+    _currentColor = Color.fromARGB(
+      (pixel.a.toInt() >> 8).clamp(0, 255),
+      (pixel.r.toInt() >> 8).clamp(0, 255),
+      (pixel.g.toInt() >> 8).clamp(0, 255),
+      (pixel.b.toInt() >> 8).clamp(0, 255),
+    );
   }
 
   @override
@@ -170,12 +192,11 @@ class _ColorSuckerState extends State<ColorSucker> {
           ),
           Container(
             margin: const EdgeInsets.only(left: 40, right: 16),
-            child:
-                Text("#${_currentColor.value.toRadixString(16).substring(2)}",
-                    style: const TextStyle(
-                      fontSize: 25,
-                      color: Colors.grey,
-                    )),
+            child: SelectableText("#${_currentColor.hexRGB}",
+                style: const TextStyle(
+                  fontSize: 25,
+                  color: Colors.grey,
+                )),
           ),
         ],
       ),
@@ -209,8 +230,8 @@ class _ColorSuckerState extends State<ColorSucker> {
                       border: Border.all(color: Colors.grey, width: 3)),
                   child: Center(
                     child: Container(
-                      height: 1,
-                      width: 1,
+                      height: 10,
+                      width: 10,
                       decoration: const BoxDecoration(
                           color: Colors.grey, shape: BoxShape.circle),
                     ),

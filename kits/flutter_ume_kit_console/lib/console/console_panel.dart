@@ -4,17 +4,9 @@ typedef ConsoleMessageCustomBuilder = Widget Function(
     String time, String log, int index, List<Tuple2<DateTime, String>> logs);
 
 class Console extends StatefulWidget implements PluggableWithStream {
-  final double? fontSize;
-  final TextStyle? timeTextStyle;
-  final TextStyle? bodyTextStyle;
   final ConsoleMessageCustomBuilder? builder;
 
-  Console(
-      {super.key,
-      this.fontSize,
-      this.timeTextStyle,
-      this.bodyTextStyle,
-      this.builder}) {
+  Console({super.key, this.builder}) {
     ConsoleManager.redirectDebugPrint();
   }
 
@@ -125,7 +117,7 @@ class ConsoleState extends State<Console>
     }
   }
 
-  double get _fontSize => widget.fontSize ?? 16;
+  double get _fontSize => 16;
 
   String _dateTimeString(int logIndex) {
     String result = '';
@@ -159,61 +151,58 @@ class ConsoleState extends State<Console>
   @override
   Widget build(BuildContext context) {
     return FloatingWidget(
-      contentWidget: Container(
-          color: Colors.black,
-          child: Stack(children: [
-            ListView.builder(
-              controller: _controller,
-              itemCount: _logList.length,
-              padding: _uiStyle == ConsoleUIStyle.card
-                  ? const EdgeInsets.all(8)
-                  : EdgeInsets.zero,
-              itemBuilder: (BuildContext context, int index) {
-                final dateString = _dateTimeString(index);
-                final message = _logList[_logList.length - index - 1].item2;
-                if (widget.builder != null) {
-                  return widget.builder!
-                      .call(dateString, message, index, _logList);
+      contentWidget: Stack(children: [
+        ListView.builder(
+          controller: _controller,
+          itemCount: _logList.length,
+          padding: _uiStyle == ConsoleUIStyle.card
+              ? const EdgeInsets.all(8)
+              : EdgeInsets.zero,
+          itemBuilder: (BuildContext context, int index) {
+            final dateString = _dateTimeString(index);
+            final message = _logList[_logList.length - index - 1].item2;
+            if (widget.builder != null) {
+              return widget.builder!.call(dateString, message, index, _logList);
+            }
+            return _buildLogItem(dateString, message, index);
+          },
+        ),
+        if (_showFilter)
+          Positioned(
+            left: 0,
+            right: 0,
+            top: 0,
+            child: TextField(
+              onChanged: (value) {
+                if (value.isNotEmpty) {
+                  _filterExp = RegExp(value);
+                } else {
+                  _filterExp = null;
                 }
-                return _buildLogItem(dateString, message, index);
+                setState(() {});
+                _refreshConsole();
               },
-            ),
-            if (_showFilter)
-              Positioned(
-                left: 0,
-                right: 0,
-                top: 0,
-                child: TextField(
-                  onChanged: (value) {
-                    if (value.isNotEmpty) {
-                      _filterExp = RegExp(value);
-                    } else {
-                      _filterExp = null;
-                    }
-                    setState(() {});
-                    _refreshConsole();
-                  },
-                  style: const TextStyle(
-                    fontSize: 16,
-                  ),
-                  decoration: const InputDecoration(
-                    fillColor: Colors.white,
-                    filled: true,
-                    hintText: 'RegExp',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.all(
-                        Radius.circular(50),
-                      ),
-                    ),
-                    contentPadding: EdgeInsets.only(
-                      top: 0,
-                      bottom: 0,
-                    ),
-                    prefixIcon: Icon(Icons.search),
+              style: const TextStyle(
+                fontSize: 16,
+              ),
+              decoration: const InputDecoration(
+                fillColor: Colors.white,
+                filled: true,
+                hintText: 'RegExp',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.all(
+                    Radius.circular(50),
                   ),
                 ),
+                contentPadding: EdgeInsets.only(
+                  top: 0,
+                  bottom: 0,
+                ),
+                prefixIcon: Icon(Icons.search),
               ),
-          ])),
+            ),
+          ),
+      ]),
       toolbarActions: [
         Tuple3(
             _uiStyleName,
@@ -251,6 +240,7 @@ class ConsoleState extends State<Console>
             ),
             _share),
       ],
+      closeAction: UMEWidget.closeActivatedPlugin,
     );
   }
 
@@ -261,9 +251,8 @@ class ConsoleState extends State<Console>
           padding: const EdgeInsets.only(bottom: 8),
           child: Container(
             decoration: BoxDecoration(
-              color: Colors.grey.shade900,
               borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: Colors.grey.shade700),
+              border: Border.all(color: Colors.grey),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -273,21 +262,18 @@ class ConsoleState extends State<Console>
                     padding:
                         const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
-                      color: Colors.grey.shade800,
+                      border: Border(bottom: BorderSide(color: Colors.grey)),
                       borderRadius:
                           const BorderRadius.vertical(top: Radius.circular(7)),
                     ),
                     child: Row(
                       children: [
-                        Icon(Icons.access_time,
-                            size: 12, color: Colors.grey.shade400),
+                        Icon(Icons.access_time, size: 12),
                         const SizedBox(width: 6),
                         Text(
                           dateString,
                           style: TextStyle(
                             fontSize: 11,
-                            color: Colors.grey.shade400,
-                            fontFamily: 'Courier',
                           ),
                         ),
                         const Spacer(),
@@ -295,7 +281,6 @@ class ConsoleState extends State<Console>
                           '#${_logList.length - index}',
                           style: TextStyle(
                             fontSize: 10,
-                            color: Colors.grey.shade500,
                           ),
                         ),
                       ],
@@ -306,8 +291,6 @@ class ConsoleState extends State<Console>
                   child: LogTextViewer(
                     logText: message,
                     style: TextStyle(
-                      color: Colors.white,
-                      fontFamily: 'Courier',
                       fontSize: _fontSize - 2,
                       height: 1.4,
                     ),
@@ -329,8 +312,6 @@ class ConsoleState extends State<Console>
                   dateString.substring(dateString.length > 12 ? 11 : 0,
                       dateString.length > 19 ? 19 : dateString.length),
                   style: TextStyle(
-                    color: Colors.grey.shade600,
-                    fontFamily: 'Courier',
                     fontSize: _fontSize - 3,
                   ),
                 ),
@@ -339,8 +320,6 @@ class ConsoleState extends State<Console>
                 child: Text(
                   message,
                   style: TextStyle(
-                    color: Colors.white70,
-                    fontFamily: 'Courier',
                     fontSize: _fontSize - 2,
                   ),
                   maxLines: 1,
@@ -355,25 +334,19 @@ class ConsoleState extends State<Console>
         return Padding(
           padding: const EdgeInsets.only(left: 8, right: 8, top: 3, bottom: 3),
           child: RichText(
-            text: TextSpan(children: [
+            text: TextSpan(style: TextStyle(color: Colors.black), children: [
               TextSpan(
                   text: dateString,
-                  style: widget.timeTextStyle ??
-                      TextStyle(
-                        color: Colors.white60,
-                        fontFamily: 'Courier',
-                        fontSize: _fontSize,
-                        fontWeight: FontWeight.w400,
-                      )),
+                  style: TextStyle(
+                      fontSize: _fontSize,
+                      fontWeight: FontWeight.w400,
+                      color: Colors.grey)),
               TextSpan(
                   text: message,
-                  style: widget.bodyTextStyle ??
-                      TextStyle(
-                        color: Colors.white,
-                        fontFamily: 'Courier',
-                        fontSize: _fontSize,
-                        fontWeight: FontWeight.w400,
-                      )),
+                  style: TextStyle(
+                    fontSize: _fontSize,
+                    fontWeight: FontWeight.w400,
+                  )),
             ]),
           ),
         );

@@ -1,7 +1,7 @@
-part of flutter_ume_kit_ui_plus;
+part of '../../flutter_ume_kit_ui_plus.dart';
 
 class AlignRuler extends StatefulWidget implements Pluggable {
-  AlignRuler({Key? key}) : super(key: key);
+  const AlignRuler({super.key});
 
   @override
   _AlignRulerState createState() => _AlignRulerState();
@@ -10,7 +10,8 @@ class AlignRuler extends StatefulWidget implements Pluggable {
   Widget buildWidget(BuildContext? context) => this;
 
   @override
-  ImageProvider<Object> get iconImageProvider => MemoryImage(iconBytesAlignRuler);
+  ImageProvider<Object> get iconImageProvider =>
+      MemoryImage(iconBytesAlignRuler);
 
   @override
   String get name => 'AlignRuler';
@@ -24,22 +25,36 @@ class AlignRuler extends StatefulWidget implements Pluggable {
 
 class _AlignRulerState extends State<AlignRuler> {
   Size _windowSize = windowSize;
-  final Size _dotSize = const Size(80, 80);
+  static const Size _dotSize = Size(80, 80);
+  static const TextStyle _fontStyle =
+      TextStyle(color: Colors.red, fontSize: 15);
+  static const TextStyle _infoStyle =
+      TextStyle(fontSize: 17, color: Colors.black);
+  static final BorderRadius _dotRadius =
+      BorderRadius.circular(_dotSize.longestSide);
+  static final Offset _dotOffset = _dotSize.center(Offset.zero);
+
   Offset _dotPosition = Offset.zero;
-  BorderRadius? _radius;
-  late Offset _dotOffset;
-  final TextStyle _fontStyle = const TextStyle(color: Colors.red, fontSize: 15);
   Size _textSize = Size.zero;
-  double _toolBarY = 60.0;
+  Offset _toolBarPosition = const Offset(16, 60);
   bool _switched = false;
-  final InspectorSelection _selection = WidgetInspectorService.instance.selection;
+  final InspectorSelection _selection =
+      WidgetInspectorService.instance.selection;
+
+  // 缓存装饰器避免重复创建
+  static final BoxDecoration _dotDecoration = BoxDecoration(
+    borderRadius: _dotRadius,
+    border: Border.all(color: Colors.black, width: 2),
+  );
+  static final BoxDecoration _centerDotDecoration = BoxDecoration(
+    shape: BoxShape.circle,
+    color: Colors.red.withValues(alpha: .8),
+  );
 
   @override
   void initState() {
-    _dotPosition = _windowSize.center(Offset.zero);
-    _radius = BorderRadius.circular(_dotSize.longestSide);
-    _dotOffset = _dotSize.center(Offset.zero);
     super.initState();
+    _dotPosition = _windowSize.center(Offset.zero);
     _textSize = _getTextSize();
     _selection.clear();
   }
@@ -52,49 +67,51 @@ class _AlignRulerState extends State<AlignRuler> {
 
   void _onPanEnd(DragEndDetails dragDetails) {
     if (!_switched) return;
-    final List<RenderObject> objects = HitTest.hitTest(_dotPosition);
+    // 异步执行耗时的 HitTest 操作
+    _performHitTest();
+  }
+
+  Future<void> _performHitTest() async {
+    final position = _dotPosition;
+    final List<RenderObject> objects = HitTest.hitTest(position);
     _selection.candidates = objects;
-    Offset offset = Offset.zero;
-    for (var obj in objects) {
-      var translation = obj.getTransformTo(null).getTranslation();
-      Rect rect = obj.paintBounds.shift(Offset(translation.x, translation.y));
-      if (rect.contains(_dotPosition)) {
-        double dx, dy = 0.0;
-        double perW = rect.width / 2;
-        double perH = rect.height / 2;
-        if (_dotPosition.dx <= perW + translation.x) {
-          dx = translation.x;
-        } else {
-          dx = translation.x + rect.width;
-        }
-        if (_dotPosition.dy <= translation.y + perH) {
-          dy = translation.y;
-        } else {
-          dy = translation.y + rect.height;
-        }
-        offset = Offset(dx, dy);
+
+    Offset? newOffset;
+    for (final obj in objects) {
+      final translation = obj.getTransformTo(null).getTranslation();
+      final rect = obj.paintBounds.shift(Offset(translation.x, translation.y));
+      if (rect.contains(position)) {
+        final perW = rect.width / 2;
+        final perH = rect.height / 2;
+        final dx = position.dx <= perW + translation.x
+            ? translation.x
+            : translation.x + rect.width;
+        final dy = position.dy <= translation.y + perH
+            ? translation.y
+            : translation.y + rect.height;
+        newOffset = Offset(dx, dy);
         break;
       }
     }
-    setState(() {
-      _dotPosition = offset == Offset.zero ? _dotPosition : offset;
+
+    if (mounted && newOffset != null) {
       HapticFeedback.mediumImpact();
-    });
+      setState(() {
+        _dotPosition = newOffset!;
+      });
+    }
   }
 
   void _toolBarPanUpdate(DragUpdateDetails dragDetails) {
     setState(() {
-      _toolBarY = dragDetails.globalPosition.dy - 40;
+      _toolBarPosition += dragDetails.delta;
     });
   }
 
   Size _getTextSize() {
     final textPainter = TextPainter(
       textDirection: TextDirection.ltr,
-      text: TextSpan(
-        text: '789.5', // for caculate size
-        style: _fontStyle,
-      ),
+      text: const TextSpan(text: '789.5', style: _fontStyle),
     );
     textPainter.layout();
     return Size(textPainter.width, textPainter.height);
@@ -111,140 +128,55 @@ class _AlignRulerState extends State<AlignRuler> {
 
   @override
   Widget build(BuildContext context) {
+    final mediaQuery = MediaQuery.of(context);
     if (_windowSize.isEmpty) {
-      _windowSize = MediaQuery.of(context).size;
+      _windowSize = mediaQuery.size;
       _dotPosition = _windowSize.center(Offset.zero);
     }
-    const TextStyle style = TextStyle(fontSize: 17, color: Colors.black);
-    Widget toolBar = Container(
-      width: MediaQuery.of(context).size.width - 32,
-      decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: const [
-            BoxShadow(
-                color: Colors.black26, blurRadius: 6, offset: Offset(2, 2))
-          ]),
-      padding: const EdgeInsets.only(bottom: 16, top: 12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Padding(
-            padding: const EdgeInsets.only(left: 26, right: 26),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: <Widget>[
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      Text('Left: ${_dotPosition.dx.toStringAsFixed(1)}',
-                          style: style),
-                      const Padding(padding: EdgeInsets.only(top: 8)),
-                      Text(
-                          'Right: ${(_windowSize.width - _dotPosition.dx).toStringAsFixed(1)}',
-                          style: style),
-                    ],
-                  ),
-                ),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      Text('Top: ${_dotPosition.dy.toStringAsFixed(1)}',
-                          style: style),
-                      const Padding(padding: EdgeInsets.only(top: 8)),
-                      Text(
-                          'Bottom: ${(_windowSize.height - _dotPosition.dy).toStringAsFixed(1)}',
-                          style: style),
-                    ],
-                  ),
-                ),
-              ],
+
+    final screenWidth = mediaQuery.size.width;
+    final screenHeight = mediaQuery.size.height;
+    final verticalLeft = _dotPosition.dx - _textSize.width;
+    final horizontalTop = _dotPosition.dy - _textSize.height;
+
+    return SizedBox(
+      height: screenHeight,
+      width: screenWidth,
+      child: Stack(
+        children: [
+          // 距离标签
+          _buildDistanceLabel(
+            left: _dotPosition.dx / 2 - _textSize.width / 2,
+            top: horizontalTop,
+            text: _dotPosition.dx.toStringAsFixed(1),
+          ),
+          _buildDistanceLabel(
+            left: verticalLeft,
+            top: _dotPosition.dy / 2 - _textSize.height / 2,
+            text: _dotPosition.dy.toStringAsFixed(1),
+          ),
+          _buildDistanceLabel(
+            left: _dotPosition.dx +
+                (_windowSize.width - _dotPosition.dx) / 2 -
+                _textSize.width / 2,
+            top: horizontalTop,
+            text: (_windowSize.width - _dotPosition.dx).toStringAsFixed(1),
+          ),
+          _buildDistanceLabel(
+            left: verticalLeft,
+            top: _dotPosition.dy +
+                (_windowSize.height - _dotPosition.dy) / 2 -
+                _textSize.height / 2,
+            text: (_windowSize.height - _dotPosition.dy).toStringAsFixed(1),
+          ),
+          // 十字线 - 使用 RepaintBoundary 隔离重绘
+          RepaintBoundary(
+            child: CustomPaint(
+              size: Size(screenWidth, screenHeight),
+              painter: _CrosshairPainter(_dotPosition, _windowSize),
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.only(top: 12),
-            child: Row(
-              children: <Widget>[
-                Container(
-                  padding: const EdgeInsets.only(left: 20),
-                  height: 30,
-                  child: Transform.scale(
-                    scale: 1.3,
-                    child: Switch(
-                        value: _switched,
-                        onChanged: _switchChanged,
-                        activeColor: Colors.red),
-                  ),
-                ),
-                const Expanded(
-                  child: Padding(
-                    padding: EdgeInsets.only(left: 10),
-                    child: Text('开启后松手将会自动吸附至最近widget',
-                        style: TextStyle(
-                            color: Colors.red, fontWeight: FontWeight.w500)),
-                  ),
-                )
-              ],
-            ),
-          )
-        ],
-      ),
-    );
-
-    double verticalLeft = _dotPosition.dx - _textSize.width;
-    double horizontalTop = _dotPosition.dy - _textSize.height;
-
-    return Container(
-      color: Colors.transparent,
-      height: MediaQuery.of(context).size.height,
-      width: MediaQuery.of(context).size.height,
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          Positioned(
-              top: horizontalTop,
-              left: _dotPosition.dx / 2 - _textSize.width / 2,
-              child: Text(_dotPosition.dx.toStringAsFixed(1),
-                  style: _fontStyle)),
-          Positioned(
-              left: verticalLeft,
-              top: _dotPosition.dy / 2 - _textSize.height / 2,
-              child: Text(_dotPosition.dy.toStringAsFixed(1),
-                  style: _fontStyle)),
-          Positioned(
-              left: _dotPosition.dx +
-                  (_windowSize.width - _dotPosition.dx) / 2 -
-                  _textSize.width / 2,
-              top: horizontalTop,
-              child: Text(
-                  (_windowSize.width - _dotPosition.dx).toStringAsFixed(1),
-                  style: _fontStyle)),
-          Positioned(
-              top: _dotPosition.dy +
-                  (_windowSize.height - _dotPosition.dy) / 2 -
-                  _textSize.height / 2,
-              left: verticalLeft,
-              child: Text(
-                  (_windowSize.height - _dotPosition.dy).toStringAsFixed(1),
-                  style: _fontStyle)),
-          Positioned(
-              left: _dotPosition.dx,
-              top: 0,
-              child: Container(
-                width: 1,
-                height: _windowSize.height,
-                color: const Color(0xffff0000),
-              )),
-          Positioned(
-              left: 0,
-              top: _dotPosition.dy,
-              child: Container(
-                width: _windowSize.width,
-                height: 1,
-                color: const Color(0xffff0000),
-              )),
+          // 拖动圆点
           Positioned(
             left: _dotPosition.dx - _dotOffset.dx,
             top: _dotPosition.dy - _dotOffset.dy,
@@ -254,30 +186,136 @@ class _AlignRulerState extends State<AlignRuler> {
               child: Container(
                 height: _dotSize.height,
                 width: _dotSize.width,
-                decoration: BoxDecoration(
-                    borderRadius: _radius,
-                    border: Border.all(color: Colors.black, width: 2)),
+                decoration: _dotDecoration,
                 child: Center(
                   child: Container(
                     height: _dotSize.width / 2.5,
                     width: _dotSize.height / 2.5,
-                    decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.red.withOpacity(0.8)),
+                    decoration: _centerDotDecoration,
                   ),
                 ),
               ),
             ),
           ),
+          // 工具栏
           Positioned(
-              left: 16,
-              top: _toolBarY,
-              child: GestureDetector(
-                  onVerticalDragUpdate: _toolBarPanUpdate, child: toolBar)),
+            left: _toolBarPosition.dx,
+            top: _toolBarPosition.dy,
+            child: GestureDetector(
+              onPanUpdate: _toolBarPanUpdate,
+              child: _buildToolBar(screenWidth),
+            ),
+          ),
           InspectorOverlay(
-              selection: _selection, needDescription: false, needEdges: false),
+            selection: _selection,
+            needDescription: false,
+            needEdges: false,
+          ),
         ],
       ),
     );
+  }
+
+  Widget _buildDistanceLabel({
+    required double left,
+    required double top,
+    required String text,
+  }) {
+    return Positioned(
+      left: left,
+      top: top,
+      child: Text(text, style: _fontStyle),
+    );
+  }
+
+  Widget _buildToolBar(double screenWidth) {
+    final dx = _dotPosition.dx;
+    final dy = _dotPosition.dy;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: const [
+          BoxShadow(color: Colors.black12, blurRadius: 8, offset: Offset(0, 2))
+        ],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // 位置信息
+          DefaultTextStyle(
+            style: _infoStyle,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                    'L: ${dx.toStringAsFixed(0)}  R: ${(_windowSize.width - dx).toStringAsFixed(0)}'),
+                const SizedBox(height: 4),
+                Text(
+                    'T: ${dy.toStringAsFixed(0)}  B: ${(_windowSize.height - dy).toStringAsFixed(0)}'),
+              ],
+            ),
+          ),
+          const SizedBox(width: 16),
+          // 吸附开关
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SizedBox(
+                height: 32,
+                child: Switch(
+                  value: _switched,
+                  onChanged: _switchChanged,
+                  activeTrackColor: Colors.red.shade200,
+                  activeThumbColor: Colors.red,
+                ),
+              ),
+              Text(
+                '吸附',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: _switched ? Colors.red : Colors.grey,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// 十字线绘制器 - 使用 CustomPainter 提升性能
+class _CrosshairPainter extends CustomPainter {
+  final Offset position;
+  final Size windowSize;
+
+  _CrosshairPainter(this.position, this.windowSize);
+
+  static final Paint _paint = Paint()
+    ..color = const Color(0xffff0000)
+    ..strokeWidth = 1;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    // 垂直线
+    canvas.drawLine(
+      Offset(position.dx, 0),
+      Offset(position.dx, windowSize.height),
+      _paint,
+    );
+    // 水平线
+    canvas.drawLine(
+      Offset(0, position.dy),
+      Offset(windowSize.width, position.dy),
+      _paint,
+    );
+  }
+
+  @override
+  bool shouldRepaint(_CrosshairPainter oldDelegate) {
+    return position != oldDelegate.position;
   }
 }

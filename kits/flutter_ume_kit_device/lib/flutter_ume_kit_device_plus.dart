@@ -1,4 +1,4 @@
-library flutter_ume_kit_device_plus;
+library;
 
 import 'dart:convert';
 

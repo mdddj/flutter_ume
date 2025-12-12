@@ -28,8 +28,8 @@ class ColorSelector extends StatelessWidget {
     this.onEyePick,
     this.withAlpha = false,
     this.thumbWidth = 96,
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {

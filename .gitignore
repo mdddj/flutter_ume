@@ -78,3 +78,5 @@ build/
 # Coverage
 **/coverage/output/
 **/coverage/new_lcov.info
+
+packages/

@@ -16,8 +16,4 @@ dependencies:
   string_scanner: ^1.4.1
 dev_dependencies:
   mockito: ^5.5.1
-  flutter_coverage_badge:
-    git:
-      url: https://github.com/smileShirely/flutter_coverage_badge.git
-      ref: 59b7580f406bb712e9d9049c8c99212946e34f65
 

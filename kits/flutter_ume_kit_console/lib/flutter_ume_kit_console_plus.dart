@@ -1,4 +1,4 @@
-library flutter_ume_kit_console_plus;
+library;
 
 import 'dart:async';
 import 'dart:collection';

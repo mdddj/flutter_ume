@@ -9,7 +9,6 @@ import 'package:share_plus/share_plus.dart';
 import 'package:string_scanner/string_scanner.dart';
 import 'package:vm_service/vm_service.dart';
 
-
 part 'show_code/code_display_service.dart';
 part 'show_code/icon.dart';
 part 'show_code/page_info_helper.dart';

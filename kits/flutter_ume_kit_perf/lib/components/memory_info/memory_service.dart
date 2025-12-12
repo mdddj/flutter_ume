@@ -1,4 +1,4 @@
-part of flutter_ume_kit_perf_plus;
+part of '../../flutter_ume_kit_perf_plus.dart';
 
 class Property {
   final bool? isConst;
@@ -64,14 +64,14 @@ class MemoryService with VMServiceWrapper {
   void getClassDetailInfo(
       String classId, Function(ClsModel?) completion) async {
     Class cls = await serviceWrapper.getObject(classId) as Class;
-    ClsModel? _clsModel;
+    ClsModel? clsModel;
     if (cls.fields != null && cls.fields!.isNotEmpty) {
       List<Property> properties = [];
       List<String> functions = [];
       cls.fields?.forEach((fieldRef) {
-        Property _property = Property(fieldRef.isConst, fieldRef.isStatic,
+        Property property = Property(fieldRef.isConst, fieldRef.isStatic,
             fieldRef.isFinal, fieldRef.declaredType!.name, fieldRef.name);
-        properties.add(_property);
+        properties.add(property);
       });
       for (var fucRef in cls.functions!) {
         String? code;
@@ -86,9 +86,9 @@ class MemoryService with VMServiceWrapper {
           functions.add(code);
         }
       }
-      _clsModel = ClsModel(propeties: properties, functions: functions);
+      clsModel = ClsModel(propeties: properties, functions: functions);
     }
-    completion(_clsModel);
+    completion(clsModel);
   }
 
   void _heapInfoList(List<ClassHeapStats> list) {
@@ -102,7 +102,7 @@ class MemoryService with VMServiceWrapper {
   void _vmToInfo(VM vm) {
     StringBuffer buffer = StringBuffer();
     buffer.writeln("Pid:  ${vm.pid}");
-    buffer.writeln("CPU:  ${vm.hostCPU}");
+    buffer.writeln("CPU:  ${vm.hostCPU} ${vm.targetCPU}");
     buffer.writeln("Version:  ${vm.version}");
     vmInfo = buffer.toString();
   }

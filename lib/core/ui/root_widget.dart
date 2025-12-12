@@ -35,6 +35,21 @@ class UMEWidget extends StatefulWidget {
     }
   }
 
+  /// Get the currently activated plugin.
+  ///
+  /// Returns null if no plugin is currently activated.
+  static Pluggable? getCurrentActivatedPlugin() {
+    final _ContentPageState? state =
+        _umeWidgetState?._contentPageKey.currentState;
+    return state?._currentSelected;
+  }
+
+  /// Check if a specific plugin is currently activated.
+  static bool isPluginActivated(String pluginName) {
+    final currentPlugin = getCurrentActivatedPlugin();
+    return currentPlugin?.name == pluginName;
+  }
+
   @override
   _UMEWidgetState createState() => _UMEWidgetState();
 }
@@ -268,13 +283,39 @@ class _ContentPageState extends State<_ContentPage> {
   }
 
   Widget _logoWidget() {
+    Widget logo;
+    Key key;
+
     if (_currentSelected != null) {
-      return SizedBox(
-          height: 30,
-          width: 30,
-          child: Image(image: _currentSelected!.iconImageProvider));
+      key = ValueKey('plugin_${_currentSelected!.name}');
+      logo = SizedBox(
+        height: 30,
+        width: 30,
+        child: Image(image: _currentSelected!.iconImageProvider),
+      );
+    } else {
+      key = ValueKey('flutter_logo_${_showedMenu ? 'active' : 'inactive'}');
+      logo = FlutterLogo(size: 40, colors: _showedMenu ? Colors.red : null);
     }
-    return FlutterLogo(size: 40, colors: _showedMenu ? Colors.red : null);
+
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 300),
+      switchInCurve: Curves.easeOutBack,
+      switchOutCurve: Curves.easeIn,
+      transitionBuilder: (child, animation) {
+        return ScaleTransition(
+          scale: animation,
+          child: FadeTransition(
+            opacity: animation,
+            child: child,
+          ),
+        );
+      },
+      child: KeyedSubtree(
+        key: key,
+        child: logo,
+      ),
+    );
   }
 
   @override
@@ -284,20 +325,24 @@ class _ContentPageState extends State<_ContentPage> {
 
   @override
   void initState() {
+    final ctx = context;
     super.initState();
     _storeManager.fetchFloatingDotPos().then((value) {
-      if (value == null || value.split(',').length != 2) {
-        return;
+      if (ctx.mounted) {
+        final mq = MediaQuery.of(ctx);
+        if (value == null || value.split(',').length != 2) {
+          return;
+        }
+        final x = double.parse(value.split(',').first);
+        final y = double.parse(value.split(',').last);
+        if (mq.size.height - dotSize.height < y ||
+            mq.size.width - dotSize.width < x) {
+          return;
+        }
+        _dx = x;
+        _dy = y;
+        setState(() {});
       }
-      final x = double.parse(value.split(',').first);
-      final y = double.parse(value.split(',').last);
-      if (MediaQuery.of(context).size.height - dotSize.height < y ||
-          MediaQuery.of(context).size.width - dotSize.width < x) {
-        return;
-      }
-      _dx = x;
-      _dy = y;
-      setState(() {});
     });
     _storeManager.fetchMinimalToolbarSwitch().then((value) {
       setState(() {
@@ -329,6 +374,7 @@ class _ContentPageState extends State<_ContentPage> {
         pluginData.onTrigger();
       }
     }
+
     _menuPage = MenuPage(
       action: itemTapAction,
       minimalAction: () {

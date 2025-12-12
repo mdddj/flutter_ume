@@ -7,7 +7,7 @@ import 'package:image/image.dart' as img;
 import '../../utils.dart';
 import 'eye_dropper_overlay.dart';
 
-final captureKey = GlobalKey();
+final _captureKey = GlobalKey();
 
 class _EyeDropperModel {
   /// based on PointerEvent.kind
@@ -16,6 +16,9 @@ class _EyeDropperModel {
   OverlayEntry? eyeOverlayEntry;
 
   img.Image? snapshot;
+
+  /// 截图区域的全局偏移（用于坐标转换）
+  Offset snapshotOffset = Offset.zero;
 
   Offset cursorPosition = screenSize.center(Offset.zero);
 
@@ -38,7 +41,7 @@ class EyeDrop extends InheritedWidget {
   EyeDrop({required Widget child, super.key})
       : super(
           child: RepaintBoundary(
-            key: captureKey,
+            key: _captureKey,
             child: Listener(
               onPointerMove: (details) => _onHover(
                 details.position,
@@ -63,8 +66,8 @@ class EyeDrop extends InheritedWidget {
     return eyeDrop;
   }
 
-  static void _onPointerUp(Offset position) {
-    _onHover(position, data.touchable);
+  static void handlePointerUp(Offset position) {
+    handlePointerMove(position, data.touchable);
     if (data.onColorSelected != null) {
       data.onColorSelected!(data.hoverColors.center);
     }
@@ -76,19 +79,19 @@ class EyeDrop extends InheritedWidget {
         data.onColorSelected = null;
         data.onColorChanged = null;
       } catch (err) {
-        debugPrint('ERROR !!! _onPointerUp $err');
+        debugPrint('ERROR !!! handlePointerUp $err');
       }
     }
   }
 
-  static void _onHover(Offset offset, bool touchable) {
+  static void handlePointerMove(Offset offset, bool touchable) {
     if (data.eyeOverlayEntry != null) data.eyeOverlayEntry!.markNeedsBuild();
 
     data.cursorPosition = offset;
-
     data.touchable = touchable;
 
     if (data.snapshot != null) {
+      // 直接使用全局坐标（因为截图从屏幕左上角开始）
       data.hoverColor = getPixelColor(data.snapshot!, offset);
       data.hoverColors = getPixelColors(data.snapshot!, offset);
     }
@@ -98,20 +101,36 @@ class EyeDrop extends InheritedWidget {
     }
   }
 
+  // 保留私有方法供内部 Listener 使用
+  static void _onPointerUp(Offset position) => handlePointerUp(position);
+  static void _onHover(Offset offset, bool touchable) =>
+      handlePointerMove(offset, touchable);
+
   void capture(BuildContext context, ValueChanged<Color> onColorSelected,
       ValueChanged<Color>? onColorChanged) async {
-    final renderer =
-        captureKey.currentContext?.findRenderObject() as RenderRepaintBoundary?;
+    // 使用 captureKey 来截图
+    final renderer = _captureKey.currentContext?.findRenderObject()
+        as RenderRepaintBoundary?;
 
-    if (renderer == null) return;
+    if (renderer == null) {
+      debugPrint('EyeDrop: renderer is null');
+      return;
+    }
+
+    // 获取截图区域的全局偏移
+    final translation = renderer.getTransformTo(null).getTranslation();
+    data.snapshotOffset = Offset(translation.x, translation.y);
 
     data.onColorSelected = onColorSelected;
     data.onColorChanged = onColorChanged;
-    final overlay =  Overlay.of(context);
+    final overlay = Overlay.of(context);
 
     data.snapshot = await repaintBoundaryToImage(renderer);
 
-    if (data.snapshot == null) return;
+    if (data.snapshot == null) {
+      debugPrint('EyeDrop: snapshot failed');
+      return;
+    }
 
     data.eyeOverlayEntry = OverlayEntry(
       builder: (_) => EyeDropOverlay(

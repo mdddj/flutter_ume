@@ -1,4 +1,5 @@
-import 'dart:js' as js;
+import 'dart:js_interop';
+import 'dart:js_interop_unsafe';
 
 /// Color picker config
 /// allow to disable some part of the picker :
@@ -15,13 +16,13 @@ class ColorPickerConfig {
 
   /// only enable opacity in canvasKit
   bool get enableOpacity =>
-      _enableOpacity && js.context['flutterCanvasKit'] != null;
+      _enableOpacity && globalContext.has('flutterCanvasKit');
 
   final bool _enableEyePicker;
 
   /// only enable eyeDropper in canvasKit
   bool get enableEyePicker =>
-      _enableEyePicker && js.context['flutterCanvasKit'] != null;
+      _enableEyePicker && globalContext.has('flutterCanvasKit');
 
   const ColorPickerConfig({
     this.enableLibrary = true,

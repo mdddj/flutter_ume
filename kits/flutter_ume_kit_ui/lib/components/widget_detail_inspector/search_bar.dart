@@ -25,8 +25,8 @@ class SearchBar extends StatefulWidget {
   final OnSubmitHandle? onSubmitHandle;
   final OnFocusChangeHandle? onFocusChangeHandle;
 
-  SearchBar({
-    Key? key,
+  const SearchBar({
+    super.key,
     this.placeHolder = '请输入要搜索的内容',
     this.autofocus = false,
     this.enabled = true,
@@ -41,7 +41,7 @@ class SearchBar extends StatefulWidget {
     this.onSubmitHandle,
     this.onFocusChangeHandle,
     this.inputCharactersLength = 100,
-  }) : super(key: key);
+  });
 
   @override
   _SearchInputState createState() => _SearchInputState();
@@ -120,7 +120,8 @@ class _SearchInputState extends State<SearchBar> {
       },
       child: Container(
           margin: const EdgeInsets.only(left: 16.0),
-          child: Image.memory(iconBytesWithDetailInspector, width: 16, height: 16)),
+          child: Image.memory(iconBytesWithDetailInspector,
+              width: 16, height: 16)),
     );
   }
 
@@ -178,7 +179,7 @@ class _SearchInputState extends State<SearchBar> {
               border: Border.all(
                   color: Colors.black12, style: BorderStyle.solid, width: 1))
           : BoxDecoration(
-              color: Colors.black.withOpacity(0.04),
+              color: Colors.black.withValues(alpha: .04),
               borderRadius: const BorderRadius.all(Radius.circular(6.0))),
       padding:
           const EdgeInsets.only(top: 9.0, left: 12.0, right: 12.0, bottom: 8.0),
@@ -205,7 +206,7 @@ class _SearchInputState extends State<SearchBar> {
           child: widget.right);
     } else {
       if (widget.cancelText == null) {
-        right = Container(width: 0, height: 0);
+        right = SizedBox(width: 0, height: 0);
       } else {
         right = Padding(
             padding: const EdgeInsets.only(left: 20.0, right: 20),
@@ -231,11 +232,11 @@ class _SearchInputState extends State<SearchBar> {
     return Flex(
       direction: Axis.horizontal,
       children: <Widget>[
-    Expanded(
-      flex: 1,
-      child: _buildInput(),
-    ),
-    Expanded(flex: 0, child: _buildClickButton())
+        Expanded(
+          flex: 1,
+          child: _buildInput(),
+        ),
+        Expanded(flex: 0, child: _buildClickButton())
       ],
     );
   }

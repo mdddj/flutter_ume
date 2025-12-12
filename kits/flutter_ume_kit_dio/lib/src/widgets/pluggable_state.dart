@@ -48,31 +48,10 @@ class JsonHighlighter {
   static bool get isReady => _initialized && _highlighter != null;
 }
 
-ButtonStyle _buttonStyle(
-  BuildContext context, {
-  EdgeInsetsGeometry? padding,
-}) {
-  return TextButton.styleFrom(
-      padding:
-          padding ?? const EdgeInsets.symmetric(horizontal: 4, vertical: 3),
-      minimumSize: Size.zero,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(999999),
-      ),
-      backgroundColor: Theme.of(context).primaryColor,
-      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-      foregroundColor: Theme.of(context).colorScheme.inversePrimary);
-}
-
 class DioPluggableState extends State<DioInspector> with StoreMixin {
   NavigatorState? get nav => widget.nav;
 
-  ThemeData? get themeData => widget.themeData;
-
-  ThemeMode? get themeMode => widget.themeMode;
-
   final ScrollController scrollController = ScrollController();
-  bool _isFull = false;
 
   DioConfig _config = const DioConfig(); //配置
 
@@ -109,52 +88,32 @@ class DioPluggableState extends State<DioInspector> with StoreMixin {
     });
   }
 
-  Widget _clearAllButton(BuildContext context) {
-    return FilledButton.icon(
-      onPressed: () {
-        final httpContainer = InspectorInstance.httpContainer;
-        httpContainer.removeListener(_onResponseAdded);
+  void clearAll() {
+    final httpContainer = InspectorInstance.httpContainer;
+    httpContainer.removeListener(_onResponseAdded);
 
-        final List<Response<dynamic>> requests = httpContainer.pagedRequests;
-        final int initialLength = requests.length;
+    final List<Response<dynamic>> requests = httpContainer.pagedRequests;
+    final int initialLength = requests.length;
 
-        for (int i = 0; i < initialLength; i++) {
-          final Response<dynamic> response = requests[i];
-          _listKey.currentState?.removeItem(
-            0,
-            (context, animation) => SizeTransition(
-              sizeFactor: animation,
-              child: _ResponseCard(
-                key: ValueKey<int>(response.startTimeMilliseconds),
-                response: response,
-                nav: nav,
-                config: _config,
-              ),
-            ),
-            duration: const Duration(milliseconds: 300),
-          );
-        }
+    for (int i = 0; i < initialLength; i++) {
+      final Response<dynamic> response = requests[i];
+      _listKey.currentState?.removeItem(
+        0,
+        (context, animation) => SizeTransition(
+          sizeFactor: animation,
+          child: _ResponseCard(
+            key: ValueKey<int>(response.startTimeMilliseconds),
+            response: response,
+            nav: nav,
+            config: _config,
+          ),
+        ),
+        duration: const Duration(milliseconds: 300),
+      );
+    }
 
-        httpContainer.clearRequests();
-        httpContainer.addListener(_onResponseAdded);
-      },
-      icon: const Icon(
-        Icons.cleaning_services,
-        size: 12,
-      ),
-      style: _buttonStyle(context, padding: const EdgeInsets.all(2)),
-      label: const Text('清理'),
-    );
-  }
-
-  Widget _fullButton() {
-    return IconButton(
-        onPressed: () {
-          setState(() {
-            _isFull = !_isFull;
-          });
-        },
-        icon: const Icon(Icons.fullscreen));
+    httpContainer.clearRequests();
+    httpContainer.addListener(_onResponseAdded);
   }
 
   @override
@@ -209,83 +168,41 @@ class DioPluggableState extends State<DioInspector> with StoreMixin {
   ///
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      themeMode: themeMode,
-      theme: themeData,
-      home: DefaultTextStyle.merge(
-        child: Align(
-          alignment: Alignment.bottomCenter,
-          child: AnimatedContainer(
-            padding: _isFull
-                ? EdgeInsets.only(top: MediaQuery.of(context).padding.top)
-                : EdgeInsets.zero,
-            duration: const Duration(milliseconds: 266),
-            constraints: BoxConstraints.tightFor(
-              width: double.maxFinite,
-              height: _isFull
-                  ? MediaQuery.of(context).size.height
-                  : (MediaQuery.of(context).size.height / 1.5),
-            ),
-            decoration: BoxDecoration(
-              borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(20),
-              ),
-              color: Theme.of(context).cardColor,
-            ),
-            child: Column(
-              children: <Widget>[
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text('请求',
-                          style: Theme.of(context).textTheme.titleMedium),
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          _settingButton(),
-                          _fullButton(),
-                          _clearAllButton(context)
-                        ],
-                      )
-                    ],
-                  ),
-                ),
-                SettingWidget(
-                  show: _showSetting,
-                  config: _config,
-                  onChanged: (v) {
-                    setState(() {
-                      _config = v;
-                    });
-                  },
-                ),
-                Expanded(
-                  child: ColoredBox(
-                    color: Theme.of(context).canvasColor,
-                    child: _itemList(context),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _settingButton() {
-    return IconButton(
-        onPressed: () {
+    return FloatingWidget(
+      toolbarActions: [
+        UMEToolbarItem("设置", const Icon(Icons.settings), () {
           _dioSettingCache.getConfig().then((value) {
             setState(() {
               _config = value;
               _showSetting = !_showSetting;
             });
           });
-        },
-        icon: const Icon(Icons.settings));
+        }),
+        UMEToolbarItem("清空", Icon(Icons.delete), clearAll)
+      ],
+      contentWidget: Column(
+        children: <Widget>[
+          SettingWidget(
+            show: _showSetting,
+            config: _config,
+            onChanged: (v) {
+              setState(() {
+                _config = v;
+              });
+            },
+          ),
+          Expanded(
+            child: _itemList(context),
+          ),
+        ],
+      ),
+      onFullScreenChanged: (isFullScreen) {
+        if (_showSetting) {
+          _showSetting = false;
+          setState(() {});
+        }
+      },
+    );
   }
 }
 
@@ -315,43 +232,47 @@ class _ResponseCard extends StatelessWidget {
         config.showFullUrl ? request.uri.toString() : request.uri.path;
 
     return Card(
+      color: Colors.white,
       margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
       shadowColor: Colors.black.withValues(alpha: 0.3),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(22),
       ),
-      child: ExpansionTile(
-        collapsedShape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(Radius.circular(22)),
-            side: BorderSide.none),
-        shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(Radius.circular(22)),
-            side: BorderSide.none),
-        title: _buildTitle(
-          context,
-          statusCode,
-          statusColor,
-          method,
-          startTime,
-          duration,
-        ),
-        subtitle: Padding(
-          padding: const EdgeInsets.only(top: 8.0),
-          child: Text(
-            url,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
+      child: ListTileTheme(
+        dense: false,
+        child: ExpansionTile(
+          collapsedShape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(Radius.circular(22)),
+              side: BorderSide.none),
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(Radius.circular(22)),
+              side: BorderSide.none),
+          title: _buildTitle(
+            context,
+            statusCode,
+            statusColor,
+            method,
+            startTime,
+            duration,
           ),
-        ),
-        children: [
-          _RequestDetails(
-            response: response,
-            config: config,
+          subtitle: Padding(
+            padding: const EdgeInsets.only(top: 8.0),
+            child: Text(
+              url,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
           ),
-        ],
+          children: [
+            _RequestDetails(
+              response: response,
+              config: config,
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -388,55 +309,63 @@ class _ResponseCard extends StatelessWidget {
   ) {
     final responseSize = _getResponseSize();
 
-    return Row(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-          decoration: BoxDecoration(
-            color: statusColor,
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Text(
-            statusCode.toString(),
-            style: const TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-              fontSize: 12,
-            ),
-          ),
-        ),
-        const SizedBox(width: 8),
-        Text(
-          method,
-          style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                fontWeight: FontWeight.bold,
+        Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: statusColor,
+                borderRadius: BorderRadius.circular(8),
               ),
-        ),
-        const SizedBox(width: 8),
-        Text(
-          startTime.hms(),
-          style: Theme.of(context).textTheme.bodySmall,
-        ),
-        const Spacer(),
-        if (responseSize > 0)
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-            margin: const EdgeInsets.only(right: 8),
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surfaceContainerHighest,
-              borderRadius: BorderRadius.circular(4),
+              child: Text(
+                statusCode.toString(),
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 12,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
-            child: Text(
-              _formatBytes(responseSize),
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w500,
+            const SizedBox(width: 8),
+            Text(
+              method,
+              style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
                   ),
+              overflow: TextOverflow.visible,
             ),
-          ),
-        Text(
-          '${duration.inMilliseconds}ms',
-          style: Theme.of(context).textTheme.bodySmall,
+            const SizedBox(width: 8),
+            Text(
+              startTime.hms(),
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+            const Spacer(),
+            if (responseSize > 0)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                margin: const EdgeInsets.only(right: 8),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Text(
+                  _formatBytes(responseSize),
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w500,
+                      ),
+                ),
+              ),
+            Text(
+              '${duration.inMilliseconds}ms',
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+          ],
         ),
       ],
     );
@@ -891,16 +820,68 @@ class _DetailSection extends StatefulWidget {
 
 class _DetailSectionState extends State<_DetailSection> {
   bool _expanded = false;
+  bool _showFullContent = false;
+  bool _contentReady = false;
+  TextSpan? _highlightedSpan;
+
+  // 大数据阈值：超过此长度时截断显示
+  static const int _truncateThreshold = 10000;
+  // 预览长度
+  static const int _previewLength = 2000;
+
+  bool get _isLargeContent => widget.content.length > _truncateThreshold;
+
+  String get _displayContent {
+    if (_isLargeContent && !_showFullContent) {
+      return '${widget.content.substring(0, _previewLength)}\n\n... [数据过大，已截断，点击下方按钮查看完整内容] ...';
+    }
+    return widget.content;
+  }
+
+  void _onExpand() {
+    if (_expanded) {
+      setState(() => _expanded = false);
+      return;
+    }
+
+    setState(() {
+      _expanded = true;
+      _contentReady = false;
+    });
+
+    // 延迟处理内容，避免展开动画卡顿
+    Future.delayed(const Duration(milliseconds: 50), () {
+      if (!mounted || !_expanded) return;
+      _prepareContent();
+    });
+  }
+
+  void _prepareContent() {
+    final content = _displayContent;
+    // 只对小数据做高亮，大数据跳过高亮以提升性能
+    if (widget.isJson && JsonHighlighter.isReady && content.length < 5000) {
+      _highlightedSpan = JsonHighlighter.highlight(content);
+    } else {
+      _highlightedSpan = null;
+    }
+    if (mounted) {
+      setState(() => _contentReady = true);
+    }
+  }
+
+  void _toggleFullContent() {
+    setState(() {
+      _showFullContent = !_showFullContent;
+      _contentReady = false;
+    });
+    Future.delayed(const Duration(milliseconds: 50), () {
+      if (mounted) _prepareContent();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-
-    // JSON 高亮
-    TextSpan? highlightedSpan;
-    if (widget.isJson && JsonHighlighter.isReady) {
-      highlightedSpan = JsonHighlighter.highlight(widget.content);
-    }
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -916,7 +897,7 @@ class _DetailSectionState extends State<_DetailSection> {
         children: [
           // 标题栏
           InkWell(
-            onTap: () => setState(() => _expanded = !_expanded),
+            onTap: _onExpand,
             borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
@@ -941,6 +922,23 @@ class _DetailSectionState extends State<_DetailSection> {
                       ),
                     ),
                   ),
+                  if (_isLargeContent)
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 6, vertical: 2),
+                      margin: const EdgeInsets.only(right: 8),
+                      decoration: BoxDecoration(
+                        color: colorScheme.errorContainer,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        '${(widget.content.length / 1024).toStringAsFixed(1)}KB',
+                        style: TextStyle(
+                          fontSize: 10,
+                          color: colorScheme.onErrorContainer,
+                        ),
+                      ),
+                    ),
                   if (widget.showCopyButton && _expanded)
                     _MiniIconButton(
                       icon: Icons.copy_rounded,
@@ -968,30 +966,67 @@ class _DetailSectionState extends State<_DetailSection> {
             secondChild: Container(
               width: double.infinity,
               padding: const EdgeInsets.fromLTRB(14, 0, 14, 14),
-              child: Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: colorScheme.surface,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: highlightedSpan != null
-                    ? SelectableText.rich(
-                        highlightedSpan,
-                        style: const TextStyle(
-                          fontSize: 12,
-                          height: 1.5,
-                          fontFamily: 'monospace',
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Container(
+                    constraints: const BoxConstraints(maxHeight: 400),
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: colorScheme.surface,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: _contentReady
+                        ? SingleChildScrollView(
+                            child: _highlightedSpan != null
+                                ? SelectableText.rich(
+                                    _highlightedSpan!,
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      height: 1.5,
+                                      fontFamily: 'monospace',
+                                    ),
+                                  )
+                                : SelectableText(
+                                    _displayContent,
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      height: 1.5,
+                                      fontFamily: 'monospace',
+                                      color: colorScheme.onSurface,
+                                    ),
+                                  ),
+                          )
+                        : const Center(
+                            child: Padding(
+                              padding: EdgeInsets.all(20),
+                              child: SizedBox(
+                                width: 20,
+                                height: 20,
+                                child:
+                                    CircularProgressIndicator(strokeWidth: 2),
+                              ),
+                            ),
+                          ),
+                  ),
+                  if (_isLargeContent && _contentReady)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8),
+                      child: TextButton.icon(
+                        onPressed: _toggleFullContent,
+                        icon: Icon(
+                          _showFullContent
+                              ? Icons.unfold_less
+                              : Icons.unfold_more,
+                          size: 16,
                         ),
-                      )
-                    : SelectableText(
-                        widget.content,
-                        style: TextStyle(
-                          fontSize: 12,
-                          height: 1.5,
-                          fontFamily: 'monospace',
-                          color: colorScheme.onSurface,
+                        label: Text(
+                          _showFullContent ? '收起' : '显示完整内容',
+                          style: const TextStyle(fontSize: 12),
                         ),
                       ),
+                    ),
+                ],
               ),
             ),
             crossFadeState: _expanded

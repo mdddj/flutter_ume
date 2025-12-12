@@ -1,0 +1,20 @@
+name: flutter_ume_kit_provider_plus
+description: Provider state viewer kit for flutter_ume. View and inspect Provider states in your Flutter app.
+version: 1.0.0
+homepage: https://github.com/mdddj/flutter_ume
+repository: https://github.com/mdddj/flutter_ume
+
+environment:
+  sdk: '>=3.4.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_ume_plus: ^4.4.1
+  provider: ^6.1.2
+  tuple: ^2.0.2
+  collection: ^1.18.0
+  vm_service: ^15.0.2
+
+dev_dependencies:
+  flutter_lints: ^6.0.0

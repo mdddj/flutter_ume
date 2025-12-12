@@ -1,4 +1,3 @@
-
 import 'package:dio/dio.dart' show Dio;
 import 'package:flutter/material.dart';
 import 'package:flutter_ume_plus/flutter_ume_plus.dart';
@@ -10,19 +9,19 @@ import 'widgets/pluggable_state.dart';
 // TODO(Alex): Implement [PluggableStream] for dot features.
 /// Implement a [Pluggable] to integrate with UME.
 class DioInspector extends StatefulWidget implements Pluggable {
-  DioInspector(
-      {super.key, required this.dio, this.nav, this.themeData, this.themeMode}) {
+  DioInspector({
+    super.key,
+    required this.dio,
+    this.nav,
+  }) {
     dio.interceptors.add(UMEDioInterceptor());
   }
 
   final NavigatorState? nav;
   final Dio dio;
-  final ThemeData? themeData;
-  final ThemeMode? themeMode;
 
   @override
-  DioPluggableState createState() =>
-      DioPluggableState();
+  DioPluggableState createState() => DioPluggableState();
 
   @override
   ImageProvider<Object> get iconImageProvider => MemoryImage(icon.iconBytes);
