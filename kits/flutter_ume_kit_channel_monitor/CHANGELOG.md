@@ -1,3 +1,7 @@
+# 5.0.0
+
+* 升级 flutter_ume_plus 到 5.0.0
+
 # 4.3.0
 
 * 更新依赖 flutter_ume_plus

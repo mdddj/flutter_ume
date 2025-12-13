@@ -47,13 +47,13 @@ https://github.com/mdddj/flutter_ume/releases/download/v0.2.1.0/app-debug.apk
 
     ``` yaml
     dev_dependencies:
-      flutter_ume_plus: ^4.3.0
-      flutter_ume_kit_ui_plus: ^4.3.0
-      flutter_ume_kit_device_plus: ^4.3.0
-      flutter_ume_kit_perf_plus: ^4.3.0
-      flutter_ume_kit_show_code_plus: ^4.3.0
-      flutter_ume_kit_console_plus: ^4.3.0
-      flutter_ume_kit_dio_plus: ^4.4.0
+      flutter_ume_plus: ^5.0.0
+      flutter_ume_kit_ui_plus: ^5.0.0
+      flutter_ume_kit_device_plus: ^5.0.0
+      flutter_ume_kit_perf_plus: ^5.0.0
+      flutter_ume_kit_show_code_plus: ^5.0.0
+      flutter_ume_kit_console_plus: ^5.0.0
+      flutter_ume_kit_dio_plus: ^5.0.0
     ```
 
 2. 执行 `flutter pub get`
