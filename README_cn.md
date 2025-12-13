@@ -15,7 +15,7 @@ Flutter 应用内调试工具平台
 扫码或点击链接下载 apk，快速体验 UME。
 https://github.com/mdddj/flutter_ume/releases/download/v0.2.1.0/app-debug.apk
 
-最新版本内置 13 个插件，
+最新版本内置 15 个插件，
 开发者可以创建自己的插件，并集成进 UME 平台。
 详见本文[为 UME 开发插件](#为-ume-开发插件)部分。
 
@@ -54,6 +54,8 @@ https://github.com/mdddj/flutter_ume/releases/download/v0.2.1.0/app-debug.apk
       flutter_ume_kit_show_code_plus: ^5.0.0
       flutter_ume_kit_console_plus: ^5.0.0
       flutter_ume_kit_dio_plus: ^5.0.0
+      flutter_ume_kit_shared_preferences_plus: ^5.0.0  # SharedPreferences 查看器
+      flutter_ume_kit_provider_plus: ^5.0.0            # Provider 状态查看器
     ```
 
 2. 执行 `flutter pub get`
@@ -67,6 +69,8 @@ https://github.com/mdddj/flutter_ume/releases/download/v0.2.1.0/app-debug.apk
     import 'package:flutter_ume_kit_device_plus/flutter_ume_kit_device_plus.dart'; // 设备信息插件包
     import 'package:flutter_ume_kit_console_plus/flutter_ume_kit_console_plus.dart'; // debugPrint 插件包
     import 'package:flutter_ume_kit_dio_plus/flutter_ume_kit_dio_plus.dart'; // Dio 网络请求调试工具
+    import 'package:flutter_ume_kit_shared_preferences_plus/flutter_ume_kit_shared_preferences_plus.dart'; // SharedPreferences 查看器
+    import 'package:flutter_ume_kit_provider_plus/flutter_ume_kit_provider_plus.dart'; // Provider 状态查看器
     ```
 
 4. 修改程序入口，增加初始化方法及注册插件代码
@@ -87,7 +91,9 @@ https://github.com/mdddj/flutter_ume/releases/download/v0.2.1.0/app-debug.apk
           ..register(CpuInfoPage())
           ..register(DeviceInfoPanel())
           ..register(Console())
-          ..register(DioInspector(dio: dio));                  // 传入你的 Dio 实例
+          ..register(DioInspector(dio: dio))                   // 传入你的 Dio 实例
+          ..register(SharedPreferencesInspector())             // SharedPreferences 查看器
+          ..register(ProviderInspector());                     // Provider 状态查看器
         runApp(UMEWidget(child: MyApp(), enable: true)); // 初始化
       } else {
         runApp(MyApp());
@@ -131,7 +137,7 @@ showDialog(
 
 ## 功能介绍
 
-当前开源版 UME 内置了 13 个插件
+当前开源版 UME 内置了 15 个插件
 
 <table border="1" width="100%">
     <tr>
@@ -193,6 +199,24 @@ showDialog(
     </tr>
     <tr>
         <td width="33.33%" align="center"><img src="https://github.com/mdddj/flutter_ume/raw/master/screenshots/dio_inspector.png" width="100%" alt="Dio 网络请求调试工具" /></br>Dio 网络请求调试工具</td>
+    </tr>
+    <tr>
+        <td width="33.33%" align="center"></td>
+    </tr>
+    <tr>
+        <td width="33.33%" align="center"><p>SharedPreferences 查看器</p></td>
+    </tr>
+    <tr>
+        <td width="33.33%" align="center">查看、编辑、搜索和删除 SharedPreferences 数据</br>SharedPreferences 查看器</td>
+    </tr>
+    <tr>
+        <td width="33.33%" align="center"></td>
+    </tr>
+    <tr>
+        <td width="33.33%" align="center"><p>Provider 状态查看器</p></td>
+    </tr>
+    <tr>
+        <td width="33.33%" align="center">查看和检查 Flutter 应用中的 Provider 状态</br>Provider 状态查看器</td>
     </tr>
 </table>
 
@@ -333,6 +357,8 @@ showDialog(
 | flutter_ume_kit_ui_plus | ![Coverage](https://raw.githubusercontent.com/mdddj/flutter_ume/master/kits/flutter_ume_kit_ui/coverage_badge.svg) |
 | flutter_ume_kit_console_plus | ![Coverage](https://raw.githubusercontent.com/mdddj/flutter_ume/master/kits/flutter_ume_kit_console/coverage_badge.svg) |
 | flutter_ume_kit_dio_plus | ![Coverage](https://raw.githubusercontent.com/mdddj/flutter_ume/master/kits/flutter_ume_kit_dio/coverage_badge.svg) |
+| flutter_ume_kit_shared_preferences_plus | - |
+| flutter_ume_kit_provider_plus | - |
 
 ### 版本号规则
 

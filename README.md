@@ -26,7 +26,7 @@ UME is an in-app debug kits platform for Flutter apps.
 Scan QR code or click link to download apk. Try it now!
 https://github.com/mdddj/flutter_ume/releases/download/v0.2.1.0/app-debug.apk
 
-There are 13 plugin kits built in the latest open source version of UME.
+There are 15 plugin kits built in the latest open source version of UME.
 Developer could create custom plugin kits, and integrate them into UME.
 Visit [Develop plugin kits for UME](#develop-plugin-kits-for-ume) for more details.
 
@@ -67,6 +67,8 @@ Visit [Develop plugin kits for UME](#develop-plugin-kits-for-ume) for more detai
       flutter_ume_kit_show_code_plus: ^5.0.0
       flutter_ume_kit_console_plus: ^5.0.0
       flutter_ume_kit_dio_plus: ^5.0.0
+      flutter_ume_kit_shared_preferences_plus: ^5.0.0  # SharedPreferences viewer
+      flutter_ume_kit_provider_plus: ^5.0.0            # Provider state viewer
     ```
 
 2. Run `flutter pub get`
@@ -80,6 +82,8 @@ Visit [Develop plugin kits for UME](#develop-plugin-kits-for-ume) for more detai
     import 'package:flutter_ume_kit_device_plus/flutter_ume_kit_device_plus.dart'; // Device info
     import 'package:flutter_ume_kit_console_plus/flutter_ume_kit_console_plus.dart'; // Show debugPrint
     import 'package:flutter_ume_kit_dio_plus/flutter_ume_kit_dio_plus.dart'; // Dio Inspector
+    import 'package:flutter_ume_kit_shared_preferences_plus/flutter_ume_kit_shared_preferences_plus.dart'; // SharedPreferences viewer
+    import 'package:flutter_ume_kit_provider_plus/flutter_ume_kit_provider_plus.dart'; // Provider state viewer
     ```
 
 4. Edit main method of your app, register plugin kits and initial UME
@@ -100,7 +104,9 @@ Visit [Develop plugin kits for UME](#develop-plugin-kits-for-ume) for more detai
           ..register(CpuInfoPage())
           ..register(DeviceInfoPanel())
           ..register(Console())
-          ..register(DioInspector(dio: dio));                  // Pass in your Dio instance
+          ..register(DioInspector(dio: dio))                   // Pass in your Dio instance
+          ..register(SharedPreferencesInspector())             // SharedPreferences viewer
+          ..register(ProviderInspector());                     // Provider state viewer
         runApp(UMEWidget(child: MyApp(), enable: true));
       } else {
         runApp(MyApp());
@@ -144,7 +150,7 @@ showDialog(
 
 ## Features
 
-There are 13 plugin kits built in the current open source version of UME.
+There are 15 plugin kits built in the current open source version of UME.
 
 <table border="1" width="100%">
     <tr>
@@ -206,6 +212,24 @@ There are 13 plugin kits built in the current open source version of UME.
     </tr>
     <tr>
         <td width="33.33%" align="center"><img src="https://github.com/mdddj/flutter_ume/raw/master/screenshots/dio_inspector.png" width="100%" alt="Dio Inspector" /></br>Dio Inspector</td>
+    </tr>
+    <tr>
+        <td width="33.33%" align="center"></td>
+    </tr>
+    <tr>
+        <td width="33.33%" align="center"><p>SharedPreferences Inspector</p></td>
+    </tr>
+    <tr>
+        <td width="33.33%" align="center">View, edit, search and delete SharedPreferences data</br>SharedPreferences Inspector</td>
+    </tr>
+    <tr>
+        <td width="33.33%" align="center"></td>
+    </tr>
+    <tr>
+        <td width="33.33%" align="center"><p>Provider Inspector</p></td>
+    </tr>
+    <tr>
+        <td width="33.33%" align="center">View and inspect Provider states in your Flutter app</br>Provider Inspector</td>
     </tr>
 </table>
 
@@ -346,6 +370,8 @@ In order to use in Release/Profile mode, the details that need to be adjusted in
 | flutter_ume_kit_ui_plus | ![Coverage](https://raw.githubusercontent.com/mdddj/flutter_ume/master/kits/flutter_ume_kit_ui/coverage_badge.svg) |
 | flutter_ume_kit_console_plus | ![Coverage](https://raw.githubusercontent.com/mdddj/flutter_ume/master/kits/flutter_ume_kit_console/coverage_badge.svg) |
 | flutter_ume_kit_dio_plus | ![Coverage](https://raw.githubusercontent.com/mdddj/flutter_ume/master/kits/flutter_ume_kit_dio/coverage_badge.svg) |
+| flutter_ume_kit_shared_preferences_plus | - |
+| flutter_ume_kit_provider_plus | - |
 
 ### Version upgrade rules
 
