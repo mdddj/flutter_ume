@@ -230,8 +230,9 @@ class _ToolBarBodyState extends State<_ToolBarBody> {
   }
 
   Widget _buildPluginList() {
-    return SizedBox(
+    return Container(
       height: _kContentHeight,
+      margin: EdgeInsets.only(bottom: MediaQuery.paddingOf(context).bottom),
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 8),
